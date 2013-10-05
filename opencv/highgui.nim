@@ -420,9 +420,18 @@ proc setCaptureProperty*(capture: ptr TCapture; property_id: cint;
 proc getCaptureDomain*(capture: ptr TCapture): cint{.
     importc: "cvGetCaptureDomain", dynlib: highguidll.}
 
+proc FOURCC*(c1, c2, c3, c4: char): cint =
+  return cint((ord(c1).cint and 255) + ((ord(c2).cint and 255) shl 8) +
+         ((ord(c3).cint and 255) shl 16) + ((ord(c4).cint and 255) shl 24))
+
+
+const 
+  FOURCC_PROMPT* = -1  # Open Codec Selection Dialog (Windows only)
+  FOURCC_DEFAULT* = FOURCC('I', 'Y', 'U', 'V') # Use default codec for specified filename (Linux only)
+
 # initialize video file writer 
 proc createVideoWriter*(filename: cstring; fourcc: cint; fps: cdouble; 
-                          frame_size: TSize; is_color: cint): ptr TVideoWriter{.
+                          frame_size: TSize; is_color: cint = 1): ptr TVideoWriter{.
     importc: "cvCreateVideoWriter", dynlib: highguidll.}
 
 # write frame to video file 
