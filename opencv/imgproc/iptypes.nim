@@ -49,7 +49,7 @@ type
     area*: cdouble            # area of the connected component  
     value*: TScalar            # average color of the connected component 
     rect*: TRect               # ROI of the component  
-    contour*: ptr Seq         # optional component boundary
+    contour*: pointer         # optional component boundary
                               #                      (the contour might have child contours corresponding to the holes)
   TContourScanner* {.pure, final.} = object
 

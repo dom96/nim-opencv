@@ -1430,8 +1430,8 @@ proc EllipseBox*(img: ptr TArr; box: TBox2D; color: TScalar;
                  thickness: cint = 1; line_type: cint = 8; shift: cint = 0) {.
     cdecl.} = 
   var axes: TSize
-  axes.width = math.Round(box.size.width.float * 5.0000000000000000e-01).cint
-  axes.height = math.Round(box.size.height.float * 5.0000000000000000e-01).cint
+  axes.width = math.round(box.size.width.float * 5.0000000000000000e-01).cint
+  axes.height = math.round(box.size.height.float * 5.0000000000000000e-01).cint
   Ellipse(img, PointFrom32f(box.center), axes, box.angle, 0, 360, color, 
           thickness, line_type, shift)
 
@@ -1739,7 +1739,7 @@ proc ReadInt*(node: ptr TFileNode; default_value: cint = 0): cint {.cdecl.} =
         node.data.i
       else:
         if NODE_IS_REAL(node.tag):
-          math.Round(node.data.f).cint
+          math.round(node.data.f).cint
         else: 0x7FFFFFFF
 
 proc ReadIntByName*(fs: ptr TFileStorage; map: ptr TFileNode; name: cstring; 
