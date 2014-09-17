@@ -18,8 +18,9 @@ when isMainModule:
     # Get one frame
     var frame = queryFrame(capture)
     if frame == nil:
-      quit("Frame is null.")
-    showImage("testwindow", frame)
+      echo("No video")
+    else:
+      showImage("testwindow", frame)
 
     # Do NOT release the frame!
     # If ESC key pressed, Key=0x10001B under OpenCV 0.9.7(linux version),
