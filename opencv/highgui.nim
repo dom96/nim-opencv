@@ -78,9 +78,9 @@ const
   PUSH_BUTTON* = 0
   CHECKBOX* = 1
   RADIOBOX* = 2
-proc createButton*(button_name: cstring; on_change: TButtonCallback; 
-                   userdata: pointer; button_type: cint; 
-                   initial_button_state: cint): cint{.cdecl, 
+proc createButton*(buttonName: cstring; onChange: TButtonCallback; 
+                   userdata: pointer; buttonType: cint; 
+                   initialButtonState: cint): cint{.cdecl, 
     importc: "cvCreateButton", dynlib: highguidll.}
 #----------------------
 # this function is used to set some external parameters in case of X Window 
@@ -109,9 +109,9 @@ const                       #These 3 flags are used by cvSet/GetWindowProperty
 proc namedWindow*(name: cstring; flags: cint): cint{.cdecl, 
     importc: "cvNamedWindow", dynlib: highguidll.}
 # Set and Get Property of the window 
-proc setWindowProperty*(name: cstring; prop_id: cint; prop_value: cdouble){.
+proc setWindowProperty*(name: cstring; propId: cint; propValue: cdouble){.
     cdecl, importc: "cvSetWindowProperty", dynlib: highguidll.}
-proc getWindowProperty*(name: cstring; prop_id: cint): cdouble{.cdecl, 
+proc getWindowProperty*(name: cstring; propId: cint): cdouble{.cdecl, 
     importc: "cvGetWindowProperty", dynlib: highguidll.}
 # display image within window (highgui windows remember their content) 
 proc showImage*(name: cstring; image: ptr TArr){.cdecl, 
@@ -130,26 +130,26 @@ proc destroyAllWindows*(){.cdecl, importc: "cvDestroyAllWindows",
 proc getWindowHandle*(name: cstring): pointer{.cdecl, 
     importc: "cvGetWindowHandle", dynlib: highguidll.}
 # get name of highgui window given its native handle 
-proc getWindowName*(window_handle: pointer): cstring{.cdecl, 
+proc getWindowName*(windowHandle: pointer): cstring{.cdecl, 
     importc: "cvGetWindowName", dynlib: highguidll.}
 
 type 
     TTrackbarCallback* = proc (pos: cint){.cdecl.}
 # create trackbar and display it on top of given window, set callback 
-proc createTrackbar*(trackbar_name: cstring; window_name: cstring; 
+proc createTrackbar*(trackbarName: cstring; windowName: cstring; 
                      value: ptr cint; count: cint; 
-                     on_change: TTrackbarCallback): cint{.cdecl, 
+                     onChange: TTrackbarCallback): cint{.cdecl, 
     importc: "cvCreateTrackbar", dynlib: highguidll.}
 type 
   TTrackbarCallback2* = proc (pos: cint; userdata: pointer){.cdecl.}
-proc createTrackbar2*(trackbar_name: cstring; window_name: cstring; 
+proc createTrackbar2*(trackbarName: cstring; windowName: cstring; 
                       value: ptr cint; count: cint; 
-                      on_change: TTrackbarCallback2; userdata: pointer): cint{.
+                      onChange: TTrackbarCallback2; userdata: pointer): cint{.
     cdecl, importc: "cvCreateTrackbar2", dynlib: highguidll.}
 # retrieve or set trackbar position 
-proc getTrackbarPos*(trackbar_name: cstring; window_name: cstring): cint{.
+proc getTrackbarPos*(trackbarName: cstring; windowName: cstring): cint{.
     cdecl, importc: "cvGetTrackbarPos", dynlib: highguidll.}
-proc setTrackbarPos*(trackbar_name: cstring; window_name: cstring; pos: cint){.
+proc setTrackbarPos*(trackbarName: cstring; windowName: cstring; pos: cint){.
     cdecl, importc: "cvSetTrackbarPos", dynlib: highguidll.}
 const 
   EVENT_MOUSEMOVE* = 0
@@ -173,7 +173,7 @@ type
   TCvMouseCallback* = proc (event: cint; x: cint; y: cint; flags: cint; 
                             param: pointer){.cdecl.}
 # assign callback for mouse events 
-proc setMouseCallback*(window_name: cstring; on_mouse: TCvMouseCallback; 
+proc setMouseCallback*(windowName: cstring; onMouse: TCvMouseCallback; 
                        param: pointer){.cdecl, importc: "cvSetMouseCallback", 
     dynlib: highguidll.}
 const                       # 8bit, color or not 
@@ -227,12 +227,12 @@ proc waitKey*(delay: cint): cint{.cdecl, importc: "cvWaitKey",
 # OpenGL support
 type 
   TCvOpenGlDrawCallback* = proc (userdata: pointer){.cdecl.}
-proc setOpenGlDrawCallback*(window_name: cstring; 
+proc setOpenGlDrawCallback*(windowName: cstring; 
                             callback: TCvOpenGlDrawCallback; userdata: pointer){.
     cdecl, importc: "cvSetOpenGlDrawCallback", dynlib: highguidll.}
-proc setOpenGlContext*(window_name: cstring){.cdecl, 
+proc setOpenGlContext*(windowName: cstring){.cdecl, 
     importc: "cvSetOpenGlContext", dynlib: highguidll.}
-proc updateWindow*(window_name: cstring){.cdecl, importc: "cvUpdateWindow", 
+proc updateWindow*(windowName: cstring){.cdecl, importc: "cvUpdateWindow", 
     dynlib: highguidll.}
 
 #***************************************************************************************
@@ -411,9 +411,9 @@ proc releaseCapture*(capture: ptr ptr TCapture){.
     importc: "cvReleaseCapture", dynlib: highguidll.}
 
 # retrieve or set capture properties 
-proc getCaptureProperty*(capture: ptr TCapture; property_id: cint): cdouble{.
+proc getCaptureProperty*(capture: ptr TCapture; propertyId: cint): cdouble{.
     importc: "cvGetCaptureProperty", dynlib: highguidll.}
-proc setCaptureProperty*(capture: ptr TCapture; property_id: cint; 
+proc setCaptureProperty*(capture: ptr TCapture; propertyId: cint; 
                            value: cdouble): cint{.
     importc: "cvSetCaptureProperty", dynlib: highguidll.}
 # Return the type of the capturer (eg, CV_CAP_V4W, CV_CAP_UNICAP), which is unknown if created with CV_CAP_ANY
@@ -431,7 +431,7 @@ const
 
 # initialize video file writer 
 proc createVideoWriter*(filename: cstring; fourcc: cint; fps: cdouble; 
-                          frame_size: TSize; is_color: cint = 1): ptr TVideoWriter{.
+                          frameSize: TSize; isColor: cint = 1): ptr TVideoWriter{.
     importc: "cvCreateVideoWriter", dynlib: highguidll.}
 
 # write frame to video file 

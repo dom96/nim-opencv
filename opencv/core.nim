@@ -129,7 +129,7 @@ proc createMatHeader*(rows: cint; cols: cint; theType: cint): ptr TMat {.cdecl,
 # Initializes CvMat header 
 
 proc initMatHeader*(mat: ptr TMat; rows: cint; cols: cint; theType: cint; 
-                    data: pointer = nil; step: cint = AUTOSTEP): ptr TMat {.
+                    data: pointer = nil; step: cint = AUTO_STEP): ptr TMat {.
     cdecl, importc: "cvInitMatHeader", dynlib: coredll.}
 # Allocates and initializes CvMat header and allocates data 
 
@@ -184,8 +184,8 @@ const
 # Selects row span of the input array: arr(start_row:delta_row:end_row,:)
 #    (end_row is not included into the span). 
 
-proc getRows*(arr: ptr TArr; submat: ptr TMat; start_row: cint; end_row: cint; 
-              delta_row: cint = 1): ptr TMat {.cdecl, importc: "cvGetRows", 
+proc getRows*(arr: ptr TArr; submat: ptr TMat; startRow: cint; endRow: cint; 
+              deltaRow: cint = 1): ptr TMat {.cdecl, importc: "cvGetRows", 
     dynlib: coredll.}
 proc getRow*(arr: ptr TArr; submat: ptr TMat; row: cint): ptr TMat {.cdecl.} = 
   return getRows(arr, submat, row, row + 1, 1)
@@ -193,7 +193,7 @@ proc getRow*(arr: ptr TArr; submat: ptr TMat; row: cint): ptr TMat {.cdecl.} =
 # Selects column span of the input array: arr(:,start_col:end_col)
 #   (end_col is not included into the span) 
 
-proc getCols*(arr: ptr TArr; submat: ptr TMat; start_col: cint; end_col: cint): ptr TMat {.
+proc getCols*(arr: ptr TArr; submat: ptr TMat; startCol: cint; endCol: cint): ptr TMat {.
     cdecl, importc: "cvGetCols", dynlib: coredll.}
 proc getCol*(arr: ptr TArr; submat: ptr TMat; col: cint): ptr TMat {.cdecl.} = 
   return getCols(arr, submat, col, col + 1)
@@ -208,7 +208,7 @@ proc getDiag*(arr: ptr TArr; submat: ptr TMat; diag: cint = 0): ptr TMat {.
 # low-level scalar <-> raw data conversion functions 
 
 proc scalarToRawData*(scalar: ptr TScalar; data: pointer; theType: cint; 
-                      extend_to_12: cint = 0) {.cdecl, 
+                      extendTo12: cint = 0) {.cdecl, 
     importc: "cvScalarToRawData", dynlib: coredll.}
 proc rawDataToScalar*(data: pointer; theType: cint; scalar: ptr TScalar) {.
     cdecl, importc: "cvRawDataToScalar", dynlib: coredll.}
@@ -250,7 +250,7 @@ proc cloneSparseMat*(mat: ptr TSparseMat): ptr TSparseMat {.cdecl,
 #   (returns the first node or NULL if the array is empty) 
 
 proc initSparseMatIterator*(mat: ptr TSparseMat; 
-                            mat_iterator: ptr TSparseMatIterator): ptr TSparseNode {.
+                            matIterator: ptr TSparseMatIterator): ptr TSparseNode {.
     cdecl, importc: "cvInitSparseMatIterator", dynlib: coredll.}
 # returns next sparse array node (or NULL if there is no more nodes)
 
@@ -296,12 +296,12 @@ const
 #    N-ari element-wise operations) 
 
 proc initNArrayIterator*(count: cint; arrs: ptr ptr TArr; mask: ptr TArr; 
-                         stubs: ptr TMatND; array_iterator: ptr TNArrayIterator; 
+                         stubs: ptr TMatND; arrayIterator: ptr TNArrayIterator; 
                          flags: cint = 0): cint {.cdecl, 
     importc: "cvInitNArrayIterator", dynlib: coredll.}
 # returns zero value if iteration is finished, non-zero (slice length) otherwise 
 
-proc nextNArraySlice*(array_iterator: ptr TNArrayIterator): cint {.cdecl, 
+proc nextNArraySlice*(arrayIterator: ptr TNArrayIterator): cint {.cdecl, 
     importc: "cvNextNArraySlice", dynlib: coredll.}
 # Returns type of array elements:
 #   CV_8UC1 ... CV_64FC4 ... 
@@ -335,7 +335,7 @@ proc ptr3D*(arr: ptr TArr; idx0: cint; idx1: cint; idx2: cint;
 #   indices order should match the array dimension order. 
 
 proc ptrND*(arr: ptr TArr; idx: ptr cint; theType: ptr cint = nil; 
-            create_node: cint = 1; precalc_hashval: ptr cuint = nil): ptr cuchar {.
+            createNode: cint = 1; precalcHashval: ptr cuint = nil): ptr cuchar {.
     cdecl, importc: "cvPtrND", dynlib: coredll.}
 # value = arr(idx0,idx1,...) 
 
@@ -393,7 +393,7 @@ proc getMat*(arr: ptr TArr; header: ptr TMat; coi: ptr cint = nil;
     dynlib: coredll.}
 # Converts CvArr (IplImage or CvMat) to IplImage 
 
-proc getImage*(arr: ptr TArr; image_header: ptr TIplImage): ptr TIplImage {.
+proc getImage*(arr: ptr TArr; imageHeader: ptr TIplImage): ptr TIplImage {.
     cdecl, importc: "cvGetImage", dynlib: coredll.}
 # Changes a shape of multi-dimensional array.
 #   new_cn == 0 means that number of channels remains unchanged.
@@ -406,15 +406,15 @@ proc getImage*(arr: ptr TArr; image_header: ptr TIplImage): ptr TIplImage {.
 #   CvMat header should be passed to the function
 #   else CvMatND header should be passed 
 
-proc reshapeMatND*(arr: ptr TArr; sizeof_header: cint; header: ptr TArr; 
-                   new_cn: cint; new_dims: cint; new_sizes: ptr cint): ptr TArr {.
+proc reshapeMatND*(arr: ptr TArr; sizeofHeader: cint; header: ptr TArr; 
+                   newCn: cint; newDims: cint; newSizes: ptr cint): ptr TArr {.
     cdecl, importc: "cvReshapeMatND", dynlib: coredll.}
 # #define cvReshapeND( arr, header, new_cn, new_dims, new_sizes )   \
 #      cvReshapeMatND( (arr), sizeof(*(header)), (header),         \
 #                      (new_cn), (new_dims), (new_sizes))
 # 
 
-proc reshape*(arr: ptr TArr; header: ptr TMat; new_cn: cint; new_rows: cint = 0): ptr TMat {.
+proc reshape*(arr: ptr TArr; header: ptr TMat; newCn: cint; newRows: cint = 0): ptr TMat {.
     cdecl, importc: "cvReshape", dynlib: coredll.}
 # Repeats source 2d array several times in both horizontal and
 #   vertical direction to fill destination array 
@@ -440,7 +440,7 @@ proc setData*(arr: ptr TArr; data: pointer; step: cint) {.cdecl,
 #   the array can not be represented as a matrix 
 
 proc getRawData*(arr: ptr TArr; data: ptr ptr cuchar; step: ptr cint = nil; 
-                 roi_size: ptr TSize = nil) {.cdecl, importc: "cvGetRawData", 
+                 roiSize: ptr TSize = nil) {.cdecl, importc: "cvGetRawData", 
     dynlib: coredll.}
 # Returns width and height of array in elements 
 
@@ -474,8 +474,8 @@ proc merge*(src0: ptr TArr; src1: ptr TArr; src2: ptr TArr; src3: ptr TArr;
 # Copies several channels from input arrays to
 #   certain channels of output arrays 
 
-proc mixChannels*(src: ptr ptr TArr; src_count: cint; dst: ptr ptr TArr; 
-                  dst_count: cint; from_to: ptr cint; pair_count: cint) {.cdecl, 
+proc mixChannels*(src: ptr ptr TArr; srcCount: cint; dst: ptr ptr TArr; 
+                  dstCount: cint; fromTo: ptr cint; pairCount: cint) {.cdecl, 
     importc: "cvMixChannels", dynlib: coredll.}
 # Performs linear transformation on every source array element:
 #   dst(x,y,c) = scale*src(x,y,c)+shift.
@@ -510,8 +510,8 @@ const
 #   max_iter to default_max_iters (if it is not set)
 #
 
-proc checkTermCriteria*(criteria: TTermCriteria; default_eps: cdouble; 
-                        default_max_iters: cint): TTermCriteria {.cdecl, 
+proc checkTermCriteria*(criteria: TTermCriteria; defaultEps: cdouble; 
+                        defaultMaxIters: cint): TTermCriteria {.cdecl, 
     importc: "cvCheckTermCriteria", dynlib: coredll.}
 #***************************************************************************************\
 #                   Arithmetic, logic and comparison operations                          *
@@ -533,7 +533,7 @@ proc sub*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; mask: ptr TArr = nil) {
 proc subS*(src: ptr TArr; value: TScalar; dst: ptr TArr; mask: ptr TArr = nil) {.
     cdecl.} = 
   addS(src, 
-       Scalar(- value.val[0], - value.val[1], - value.val[2], - value.val[3]), 
+       scalar(- value.val[0], - value.val[1], - value.val[2], - value.val[3]), 
        dst, mask)
 
 # dst(mask) = value - src(mask) 
@@ -555,8 +555,8 @@ proc `Div`*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; scale: cdouble = 1) {
 
 proc scaleAdd*(src1: ptr TArr; scale: TScalar; src2: ptr TArr; dst: ptr TArr) {.
     cdecl, importc: "cvScaleAdd", dynlib: coredll.}
-template AXPY*(A, real_scalar, B, C: expr): expr = 
-  ScaleAdd(A, RealScalar(real_scalar), B, C)
+template axpy*(a, realScalar, b, c: expr): expr = 
+  ScaleAdd(a, realScalar(realScalar), b, c)
 
 # dst = src1 * alpha + src2 * beta + gamma 
 
@@ -615,11 +615,11 @@ const
 #   Destination image should be 8uC1 or 8sC1 
 # dst(idx) = src1(idx) _cmp_op_ src2(idx) 
 
-proc cmp*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; cmp_op: cint) {.cdecl, 
+proc cmp*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; cmpOp: cint) {.cdecl, 
     importc: "cvCmp", dynlib: coredll.}
 # dst(idx) = src1(idx) _cmp_op_ value 
 
-proc cmpS*(src: ptr TArr; value: cdouble; dst: ptr TArr; cmp_op: cint) {.cdecl, 
+proc cmpS*(src: ptr TArr; value: cdouble; dst: ptr TArr; cmpOp: cint) {.cdecl, 
     importc: "cvCmpS", dynlib: coredll.}
 # dst(idx) = min(src1(idx),src2(idx)) 
 
@@ -645,7 +645,7 @@ proc absDiff*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr) {.cdecl,
 
 proc absDiffS*(src: ptr TArr; dst: ptr TArr; value: TScalar) {.cdecl, 
     importc: "cvAbsDiffS", dynlib: coredll.}
-template Abs*(src, dst: expr): expr = 
+template abs*(src, dst: expr): expr = 
   AbsDiffS((src), (dst), ScalarAll(0))
 
 #***************************************************************************************\
@@ -655,14 +655,14 @@ template Abs*(src, dst: expr): expr =
 #   Either of output components (magnitude or angle) is optional 
 
 proc cartToPolar*(x: ptr TArr; y: ptr TArr; magnitude: ptr TArr; 
-                  angle: ptr TArr = nil; angle_in_degrees: cint = 0) {.cdecl, 
+                  angle: ptr TArr = nil; angleInDegrees: cint = 0) {.cdecl, 
     importc: "cvCartToPolar", dynlib: coredll.}
 # Does polar->cartesian coordinates conversion.
 #   Either of output components (magnitude or angle) is optional.
 #   If magnitude is missing it is assumed to be all 1's 
 
 proc polarToCart*(magnitude: ptr TArr; angle: ptr TArr; x: ptr TArr; 
-                  y: ptr TArr; angle_in_degrees: cint = 0) {.cdecl, 
+                  y: ptr TArr; angleInDegrees: cint = 0) {.cdecl, 
     importc: "cvPolarToCart", dynlib: coredll.}
 # Does powering: dst(idx) = src(idx)^power 
 
@@ -697,8 +697,8 @@ const
   CHECK_RANGE* = 1
   CHECK_QUIET* = 2
 
-proc checkArr*(arr: ptr TArr; flags: cint = 0; min_val: cdouble = 0; 
-               max_val: cdouble = 0): cint {.cdecl, importc: "cvCheckArr", 
+proc checkArr*(arr: ptr TArr; flags: cint = 0; minVal: cdouble = 0; 
+               maxVal: cdouble = 0): cint {.cdecl, importc: "cvCheckArr", 
     dynlib: coredll.}
 const 
   CheckArray* = checkArr
@@ -736,11 +736,11 @@ proc crossProduct*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr) {.cdecl,
     importc: "cvCrossProduct", dynlib: coredll.}
 # Matrix transform: dst = A*B + C, C is optional 
 
-template MatMulAdd*(src1, src2, src3, dst: expr): expr = 
+template matMulAdd*(src1, src2, src3, dst: expr): expr = 
   GEMM((src1), (src2), 1.0000000000000000e+00, (src3), 1.0000000000000000e+00, 
        (dst), 0)
 
-template MatMul*(src1, src2, dst: expr): expr = 
+template matMul*(src1, src2, dst: expr): expr = 
   MatMulAdd((src1), (src2), nil, (dst))
 
 const 
@@ -783,13 +783,13 @@ proc transpose*(src: ptr TArr; dst: ptr TArr) {.cdecl, importc: "cvTranspose",
 
 # Completes the symmetric matrix from the lower (LtoR=0) or from the upper (LtoR!=0) part 
 
-proc completeSymm*(matrix: ptr TMat; LtoR: cint = 0) {.cdecl, 
+proc completeSymm*(matrix: ptr TMat; ltoR: cint = 0) {.cdecl, 
     importc: "cvCompleteSymm", dynlib: coredll.}
 # Mirror array data around horizontal (flip=0),
 #   vertical (flip=1) or both(flip=-1) axises:
 #   cvFlip(src) flips images vertically and sequences horizontally (inplace) 
 
-proc flip*(src: ptr TArr; dst: ptr TArr = nil; flip_mode: cint = 0) {.cdecl, 
+proc flip*(src: ptr TArr; dst: ptr TArr = nil; flipMode: cint = 0) {.cdecl, 
     importc: "cvFlip", dynlib: coredll.}
 const 
   Mirror* = flip
@@ -799,12 +799,12 @@ const
 
 # Performs Singular Value Decomposition of a matrix 
 
-proc sVD*(A: ptr TArr; W: ptr TArr; U: ptr TArr = nil; V: ptr TArr = nil; 
+proc sVD*(a: ptr TArr; w: ptr TArr; u: ptr TArr = nil; v: ptr TArr = nil; 
           flags: cint = 0) {.cdecl, importc: "cvSVD", dynlib: coredll.}
 # Performs Singular Value Back Substitution (solves A*X = B):
 #   flags must be the same as in cvSVD 
 
-proc sVBkSb*(W: ptr TArr; U: ptr TArr; V: ptr TArr; B: ptr TArr; X: ptr TArr; 
+proc sVBkSb*(w: ptr TArr; u: ptr TArr; v: ptr TArr; b: ptr TArr; x: ptr TArr; 
              flags: cint) {.cdecl, importc: "cvSVBkSb", dynlib: coredll.}
 const 
   LU* = 0
@@ -842,7 +842,7 @@ proc eigenVV*(mat: ptr TArr; evects: ptr TArr; evals: ptr TArr;
 #                                int lowindex, int highindex );
 # Makes an identity matrix (mat_ij = i == j) 
 
-proc setIdentity*(mat: ptr TArr; value: TScalar = RealScalar(1)) {.cdecl, 
+proc setIdentity*(mat: ptr TArr; value: TScalar = realScalar(1)) {.cdecl, 
     importc: "cvSetIdentity", dynlib: coredll.}
 # Fills matrix with given range of numbers 
 
@@ -880,7 +880,7 @@ const
 const 
   COVAR_COLS* = 16
 
-proc calcCovarMatrix*(vects: ptr ptr TArr; count: cint; cov_mat: ptr TArr; 
+proc calcCovarMatrix*(vects: ptr ptr TArr; count: cint; covMat: ptr TArr; 
                       avg: ptr TArr; flags: cint) {.cdecl, 
     importc: "cvCalcCovarMatrix", dynlib: coredll.}
 const 
@@ -920,12 +920,12 @@ proc avg*(arr: ptr TArr; mask: ptr TArr = nil): TScalar {.cdecl,
     importc: "cvAvg", dynlib: coredll.}
 # Calculates mean and standard deviation of pixel values 
 
-proc avgSdv*(arr: ptr TArr; mean: ptr TScalar; std_dev: ptr TScalar; 
+proc avgSdv*(arr: ptr TArr; mean: ptr TScalar; stdDev: ptr TScalar; 
              mask: ptr TArr = nil) {.cdecl, importc: "cvAvgSdv", dynlib: coredll.}
 # Finds global minimum, maximum and their positions 
 
-proc minMaxLoc*(arr: ptr TArr; min_val: ptr cdouble; max_val: ptr cdouble; 
-                min_loc: ptr TPoint = nil; max_loc: ptr TPoint = nil; 
+proc minMaxLoc*(arr: ptr TArr; minVal: ptr cdouble; maxVal: ptr cdouble; 
+                minLoc: ptr TPoint = nil; maxLoc: ptr TPoint = nil; 
                 mask: ptr TArr = nil) {.cdecl, importc: "cvMinMaxLoc", 
                                         dynlib: coredll.}
 # types of array norm 
@@ -947,12 +947,12 @@ const
 
 # Finds norm, difference norm or relative difference norm for an array (or two arrays) 
 
-proc norm*(arr1: ptr TArr; arr2: ptr TArr = nil; norm_type: cint = L2; 
+proc norm*(arr1: ptr TArr; arr2: ptr TArr = nil; normType: cint = L2; 
            mask: ptr TArr = nil): cdouble {.cdecl, importc: "cvNorm", 
     dynlib: coredll.}
 proc normalize*(src: ptr TArr; dst: ptr TArr; 
                 a: cdouble = 1.0000000000000000e+00; 
-                b: cdouble = 0.0000000000000000e+00; norm_type: cint = L2; 
+                b: cdouble = 0.0000000000000000e+00; normType: cint = L2; 
                 mask: ptr TArr = nil) {.cdecl, importc: "cvNormalize", 
                                         dynlib: coredll.}
 const 
@@ -982,7 +982,7 @@ const
 #    real->ccs (forward),
 #    ccs->real (inverse) 
 
-proc dFT*(src: ptr TArr; dst: ptr TArr; flags: cint; nonzero_rows: cint = 0) {.
+proc dFT*(src: ptr TArr; dst: ptr TArr; flags: cint; nonzeroRows: cint = 0) {.
     cdecl, importc: "cvDFT", dynlib: coredll.}
 const 
   fFT* = dFT
@@ -1010,7 +1010,7 @@ proc sliceLength*(slice: core.TSlice; seq: ptr TSeq): cint {.cdecl,
 #   block_size == 0 means that default,
 #   somewhat optimal size, is used (currently, it is 64K) 
 
-proc createMemStorage*(block_size: cint = 0): ptr TMemStorage {.cdecl, 
+proc createMemStorage*(blockSize: cint = 0): ptr TMemStorage {.cdecl, 
     importc: "cvCreateMemStorage", dynlib: coredll.}
 # Creates a memory storage that will borrow memory blocks from parent storage 
 
@@ -1047,21 +1047,21 @@ proc memStorageAllocString*(storage: ptr TMemStorage; thePtr: cstring;
     importc: "cvMemStorageAllocString", dynlib: coredll.}
 # Creates new empty sequence that will reside in the specified storage 
 
-proc createSeq*(seq_flags: cint; header_size: csize; elem_size: csize; 
+proc createSeq*(seqFlags: cint; headerSize: csize; elemSize: csize; 
                 storage: ptr TMemStorage): ptr TSeq {.cdecl, 
     importc: "cvCreateSeq", dynlib: coredll.}
 # Changes default size (granularity) of sequence blocks.
 #   The default size is ~1Kbyte 
 
-proc setSeqBlockSize*(seq: ptr TSeq; delta_elems: cint) {.cdecl, 
+proc setSeqBlockSize*(seq: ptr TSeq; deltaElems: cint) {.cdecl, 
     importc: "cvSetSeqBlockSize", dynlib: coredll.}
 # Adds new element to the end of sequence. Returns pointer to the element 
 
-proc seqPush*(seq: ptr TSeq; element: pointer = nil): ptr schar {.cdecl, 
+proc seqPush*(seq: ptr TSeq; element: pointer = nil): ptr Schar {.cdecl, 
     importc: "cvSeqPush", dynlib: coredll.}
 # Adds new element to the beginning of sequence. Returns pointer to it 
 
-proc seqPushFront*(seq: ptr TSeq; element: pointer = nil): ptr schar {.cdecl, 
+proc seqPushFront*(seq: ptr TSeq; element: pointer = nil): ptr Schar {.cdecl, 
     importc: "cvSeqPushFront", dynlib: coredll.}
 # Removes the last element from sequence and optionally saves it 
 
@@ -1078,17 +1078,17 @@ const
 # Adds several new elements to the end of sequence 
 
 proc seqPushMulti*(seq: ptr TSeq; elements: pointer; count: cint; 
-                   in_front: cint = 0) {.cdecl, importc: "cvSeqPushMulti", 
+                   inFront: cint = 0) {.cdecl, importc: "cvSeqPushMulti", 
     dynlib: coredll.}
 # Removes several elements from the end of sequence and optionally saves them 
 
 proc seqPopMulti*(seq: ptr TSeq; elements: pointer; count: cint; 
-                  in_front: cint = 0) {.cdecl, importc: "cvSeqPopMulti", 
+                  inFront: cint = 0) {.cdecl, importc: "cvSeqPopMulti", 
                                         dynlib: coredll.}
 # Inserts a new element in the middle of sequence.
 #   cvSeqInsert(seq,0,elem) == cvSeqPushFront(seq,elem) 
 
-proc seqInsert*(seq: ptr TSeq; before_index: cint; element: pointer = nil): ptr schar {.
+proc seqInsert*(seq: ptr TSeq; beforeIndex: cint; element: pointer = nil): ptr Schar {.
     cdecl, importc: "cvSeqInsert", dynlib: coredll.}
 # Removes specified sequence element 
 
@@ -1103,7 +1103,7 @@ proc clearSeq*(seq: ptr TSeq) {.cdecl, importc: "cvClearSeq", dynlib: coredll.}
 #   Negative indices are supported and mean counting from the end
 #   (e.g -1 means the last sequence element) 
 
-proc getSeqElem*(seq: ptr TSeq; index: cint): ptr schar {.cdecl, 
+proc getSeqElem*(seq: ptr TSeq; index: cint): ptr Schar {.cdecl, 
     importc: "cvGetSeqElem", dynlib: coredll.}
 # Calculates index of the specified sequence element.
 #   Returns -1 if element does not belong to the sequence 
@@ -1116,7 +1116,7 @@ proc startAppendToSeq*(seq: ptr TSeq; writer: ptr TSeqWriter) {.cdecl,
     importc: "cvStartAppendToSeq", dynlib: coredll.}
 # Combination of cvCreateSeq and cvStartAppendToSeq 
 
-proc startWriteSeq*(seq_flags: cint; header_size: cint; elem_size: cint; 
+proc startWriteSeq*(seqFlags: cint; headerSize: cint; elemSize: cint; 
                     storage: ptr TMemStorage; writer: ptr TSeqWriter) {.cdecl, 
     importc: "cvStartWriteSeq", dynlib: coredll.}
 # Closes sequence writer, updates sequence header and returns pointer
@@ -1143,27 +1143,27 @@ proc getSeqReaderPos*(reader: ptr TSeqReader): cint {.cdecl,
 # Changes sequence reader position. It may seek to an absolute or
 #   to relative to the current position 
 
-proc setSeqReaderPos*(reader: ptr TSeqReader; index: cint; is_relative: cint = 0) {.
+proc setSeqReaderPos*(reader: ptr TSeqReader; index: cint; isRelative: cint = 0) {.
     cdecl, importc: "cvSetSeqReaderPos", dynlib: coredll.}
 # Copies sequence content to a continuous piece of memory 
 
-proc cvtSeqToArray*(seq: ptr TSeq; elements: pointer; slice: core.TSlice = WHOLE_SEQ): pointer {.
+proc cvtSeqToArray*(seq: ptr TSeq; elements: pointer; slice: core.TSlice = Whole_Seq): pointer {.
     cdecl, importc: "cvCvtSeqToArray", dynlib: coredll.}
 # Creates sequence header for array.
 #   After that all the operations on sequences that do not alter the content
 #   can be applied to the resultant sequence 
 
-proc makeSeqHeaderForArray*(seq_type: cint; header_size: cint; elem_size: cint; 
+proc makeSeqHeaderForArray*(seqType: cint; headerSize: cint; elemSize: cint; 
                             elements: pointer; total: cint; seq: ptr TSeq; 
                             theBlock: ptr TSeqBlock): ptr TSeq {.cdecl, 
     importc: "cvMakeSeqHeaderForArray", dynlib: coredll.}
 # Extracts sequence slice (with or without copying sequence elements) 
 
 proc seqSlice*(seq: ptr TSeq; slice: core.TSlice; storage: ptr TMemStorage = nil; 
-               copy_data: cint = 0): ptr TSeq {.cdecl, importc: "cvSeqSlice", 
+               copyData: cint = 0): ptr TSeq {.cdecl, importc: "cvSeqSlice", 
     dynlib: coredll.}
 proc cloneSeq*(seq: ptr TSeq; storage: ptr TMemStorage = nil): ptr TSeq {.cdecl.} = 
-  return seqSlice(seq, WHOLE_SEQ, storage, 1)
+  return seqSlice(seq, Whole_Seq, storage, 1)
 
 # Removes sequence slice 
 
@@ -1171,7 +1171,7 @@ proc seqRemoveSlice*(seq: ptr TSeq; slice: core.TSlice) {.cdecl,
     importc: "cvSeqRemoveSlice", dynlib: coredll.}
 # Inserts a sequence or array into another sequence 
 
-proc seqInsertSlice*(seq: ptr TSeq; before_index: cint; from_arr: ptr TArr) {.
+proc seqInsertSlice*(seq: ptr TSeq; beforeIndex: cint; fromArr: ptr TArr) {.
     cdecl, importc: "cvSeqInsertSlice", dynlib: coredll.}
 # a < b ? -1 : a > b ? 1 : 0 
 
@@ -1184,8 +1184,8 @@ proc seqSort*(seq: ptr TSeq; func: TCmpFunc; userdata: pointer = nil) {.cdecl,
     importc: "cvSeqSort", dynlib: coredll.}
 # Finds element in a [sorted] sequence 
 
-proc seqSearch*(seq: ptr TSeq; elem: pointer; func: TCmpFunc; is_sorted: cint; 
-                elem_idx: ptr cint; userdata: pointer = nil): ptr schar {.cdecl, 
+proc seqSearch*(seq: ptr TSeq; elem: pointer; func: TCmpFunc; isSorted: cint; 
+                elemIdx: ptr cint; userdata: pointer = nil): ptr Schar {.cdecl, 
     importc: "cvSeqSearch", dynlib: coredll.}
 # Reverses order of sequence elements in-place 
 
@@ -1193,7 +1193,7 @@ proc seqInvert*(seq: ptr TSeq) {.cdecl, importc: "cvSeqInvert", dynlib: coredll.
 # Splits sequence into one or more equivalence classes using the specified criteria 
 
 proc seqPartition*(seq: ptr TSeq; storage: ptr TMemStorage; 
-                   labels: ptr ptr TSeq; is_equal: TCmpFunc; userdata: pointer): cint {.
+                   labels: ptr ptr TSeq; isEqual: TCmpFunc; userdata: pointer): cint {.
     cdecl, importc: "cvSeqPartition", dynlib: coredll.}
 #*********** Internal sequence functions ***********
 
@@ -1203,13 +1203,13 @@ proc createSeqBlock*(writer: ptr TSeqWriter) {.cdecl,
     importc: "cvCreateSeqBlock", dynlib: coredll.}
 # Creates a new set 
 
-proc createSet*(set_flags: cint; header_size: cint; elem_size: cint; 
+proc createSet*(setFlags: cint; headerSize: cint; elemSize: cint; 
                 storage: ptr TMemStorage): ptr TSet {.cdecl, 
     importc: "cvCreateSet", dynlib: coredll.}
 # Adds new element to the set and returns pointer to it 
 
-proc setAdd*(set_header: ptr TSet; elem: ptr TSetElem = nil; 
-             inserted_elem: ptr ptr TSetElem = nil): cint {.cdecl, 
+proc setAdd*(setHeader: ptr TSet; elem: ptr TSetElem = nil; 
+             insertedElem: ptr ptr TSetElem = nil): cint {.cdecl, 
     importc: "cvSetAdd", dynlib: coredll.}
 # Fast variant of cvSetAdd 
 
@@ -1236,7 +1236,7 @@ discard """ proc setRemoveByPtr*(set_header: ptr TSet; elem: pointer) {.cdecl.} 
 
 # Removes element from the set by its index  
 
-proc setRemove*(set_header: ptr TSet; index: cint) {.cdecl, 
+proc setRemove*(setHeader: ptr TSet; index: cint) {.cdecl, 
     importc: "cvSetRemove", dynlib: coredll.}
 # Returns a set element by index. If the element doesn't belong to the set,
 #   NULL is returned 
@@ -1246,17 +1246,17 @@ discard """ proc getSetElem*(set_header: ptr TSet; idx: cint): ptr TSetElem {.in
   return if elem and IS_SET_ELEM(elem): elem else: 0 """
 # Removes all the elements from the set 
 
-proc clearSet*(set_header: ptr TSet) {.cdecl, importc: "cvClearSet", 
+proc clearSet*(setHeader: ptr TSet) {.cdecl, importc: "cvClearSet", 
                                        dynlib: coredll.}
 # Creates new graph 
 
-proc createGraph*(graph_flags: cint; header_size: cint; vtx_size: cint; 
-                  edge_size: cint; storage: ptr TMemStorage): ptr TGraph {.
+proc createGraph*(graphFlags: cint; headerSize: cint; vtxSize: cint; 
+                  edgeSize: cint; storage: ptr TMemStorage): ptr TGraph {.
     cdecl, importc: "cvCreateGraph", dynlib: coredll.}
 # Adds new vertex to the graph 
 
 proc graphAddVtx*(graph: ptr TGraph; vtx: ptr TGraphVtx = nil; 
-                  inserted_vtx: ptr ptr TGraphVtx = nil): cint {.cdecl, 
+                  insertedVtx: ptr ptr TGraphVtx = nil): cint {.cdecl, 
     importc: "cvGraphAddVtx", dynlib: coredll.}
 # Removes vertex from the graph together with all incident edges 
 
@@ -1269,27 +1269,27 @@ proc graphRemoveVtxByPtr*(graph: ptr TGraph; vtx: ptr TGraphVtx): cint {.cdecl,
 #   connecting the vertices.
 #   Functions return 1 if a new edge was created, 0 otherwise 
 
-proc graphAddEdge*(graph: ptr TGraph; start_idx: cint; end_idx: cint; 
+proc graphAddEdge*(graph: ptr TGraph; startIdx: cint; endIdx: cint; 
                    edge: ptr TGraphEdge = nil; 
-                   inserted_edge: ptr ptr TGraphEdge = nil): cint {.cdecl, 
+                   insertedEdge: ptr ptr TGraphEdge = nil): cint {.cdecl, 
     importc: "cvGraphAddEdge", dynlib: coredll.}
-proc graphAddEdgeByPtr*(graph: ptr TGraph; start_vtx: ptr TGraphVtx; 
-                        end_vtx: ptr TGraphVtx; edge: ptr TGraphEdge = nil; 
-                        inserted_edge: ptr ptr TGraphEdge = nil): cint {.cdecl, 
+proc graphAddEdgeByPtr*(graph: ptr TGraph; startVtx: ptr TGraphVtx; 
+                        endVtx: ptr TGraphVtx; edge: ptr TGraphEdge = nil; 
+                        insertedEdge: ptr ptr TGraphEdge = nil): cint {.cdecl, 
     importc: "cvGraphAddEdgeByPtr", dynlib: coredll.}
 # Remove edge connecting two vertices 
 
-proc graphRemoveEdge*(graph: ptr TGraph; start_idx: cint; end_idx: cint) {.
+proc graphRemoveEdge*(graph: ptr TGraph; startIdx: cint; endIdx: cint) {.
     cdecl, importc: "cvGraphRemoveEdge", dynlib: coredll.}
-proc graphRemoveEdgeByPtr*(graph: ptr TGraph; start_vtx: ptr TGraphVtx; 
-                           end_vtx: ptr TGraphVtx) {.cdecl, 
+proc graphRemoveEdgeByPtr*(graph: ptr TGraph; startVtx: ptr TGraphVtx; 
+                           endVtx: ptr TGraphVtx) {.cdecl, 
     importc: "cvGraphRemoveEdgeByPtr", dynlib: coredll.}
 # Find edge connecting two vertices 
 
-proc findGraphEdge*(graph: ptr TGraph; start_idx: cint; end_idx: cint): ptr TGraphEdge {.
+proc findGraphEdge*(graph: ptr TGraph; startIdx: cint; endIdx: cint): ptr TGraphEdge {.
     cdecl, importc: "cvFindGraphEdge", dynlib: coredll.}
-proc findGraphEdgeByPtr*(graph: ptr TGraph; start_vtx: ptr TGraphVtx; 
-                         end_vtx: ptr TGraphVtx): ptr TGraphEdge {.cdecl, 
+proc findGraphEdgeByPtr*(graph: ptr TGraph; startVtx: ptr TGraphVtx; 
+                         endVtx: ptr TGraphVtx): ptr TGraphEdge {.cdecl, 
     importc: "cvFindGraphEdgeByPtr", dynlib: coredll.}
 const 
   graphFindEdge* = findGraphEdge
@@ -1301,23 +1301,23 @@ proc clearGraph*(graph: ptr TGraph) {.cdecl, importc: "cvClearGraph",
                                       dynlib: coredll.}
 # Count number of edges incident to the vertex 
 
-proc graphVtxDegree*(graph: ptr TGraph; vtx_idx: cint): cint {.cdecl, 
+proc graphVtxDegree*(graph: ptr TGraph; vtxIdx: cint): cint {.cdecl, 
     importc: "cvGraphVtxDegree", dynlib: coredll.}
 proc graphVtxDegreeByPtr*(graph: ptr TGraph; vtx: ptr TGraphVtx): cint {.cdecl, 
     importc: "cvGraphVtxDegreeByPtr", dynlib: coredll.}
 # Retrieves graph vertex by given index 
 
-template GetGraphVtx*(graph, idx: expr): expr = 
+template getGraphVtx*(graph, idx: expr): expr = 
   cast[ptr TGraphVtx](GetSetElem(cast[ptr TSet]((graph)), (idx)))
 
 # Retrieves index of a graph vertex given its pointer 
 
 # Retrieves index of a graph edge given its pointer 
 
-template GraphGetVtxCount*(graph: expr): expr = 
+template graphGetVtxCount*(graph: expr): expr = 
   graph.active_count
 
-template GraphGetEdgeCount*(graph: expr): expr = 
+template graphGetEdgeCount*(graph: expr): expr = 
   graph.edges.active_count
 
 const 
@@ -1387,7 +1387,7 @@ proc cloneGraph*(graph: ptr TGraph; storage: ptr TMemStorage): ptr TGraph {.
 #       If a drawn figure is partially or completely outside of the image, it is clipped.*
 #\***************************************************************************************
 
-template RGB*(r, g, b: expr): expr = 
+template rgb*(r, g, b: expr): expr = 
   Scalar((b), (g), (r), 0)
 
 const 
@@ -1397,57 +1397,57 @@ const
 # Draws 4-connected, 8-connected or antialiased line segment connecting two points 
 
 proc line*(img: ptr TArr; pt1: TPoint; pt2: TPoint; color: TScalar; 
-           thickness: cint = 1; line_type: cint = 8; shift: cint = 0) {.cdecl, 
+           thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.cdecl, 
     importc: "cvLine", dynlib: coredll.}
 # Draws a rectangle given two opposite corners of the rectangle (pt1 & pt2),
 #   if thickness<0 (e.g. thickness == CV_FILLED), the filled box is drawn 
 
 proc rectangle*(img: ptr TArr; pt1: TPoint; pt2: TPoint; color: TScalar; 
-                thickness: cint = 1; line_type: cint = 8; shift: cint = 0) {.
+                thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
     cdecl, importc: "cvRectangle", dynlib: coredll.}
 # Draws a rectangle specified by a CvRect structure 
 
 proc rectangleR*(img: ptr TArr; r: TRect; color: TScalar; thickness: cint = 1; 
-                 line_type: cint = 8; shift: cint = 0) {.cdecl, 
+                 lineType: cint = 8; shift: cint = 0) {.cdecl, 
     importc: "cvRectangleR", dynlib: coredll.}
 # Draws a circle with specified center and radius.
 #   Thickness works in the same way as with cvRectangle 
 
 proc circle*(img: ptr TArr; center: TPoint; radius: cint; color: TScalar; 
-             thickness: cint = 1; line_type: cint = 8; shift: cint = 0) {.cdecl, 
+             thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.cdecl, 
     importc: "cvCircle", dynlib: coredll.}
 # Draws ellipse outline, filled ellipse, elliptic arc or filled elliptic sector,
 #   depending on <thickness>, <start_angle> and <end_angle> parameters. The resultant figure
 #   is rotated by <angle>. All the angles are in degrees 
 
 proc ellipse*(img: ptr TArr; center: TPoint; axes: TSize; angle: cdouble; 
-              start_angle: cdouble; end_angle: cdouble; color: TScalar; 
-              thickness: cint = 1; line_type: cint = 8; shift: cint = 0) {.
+              startAngle: cdouble; endAngle: cdouble; color: TScalar; 
+              thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
     cdecl, importc: "cvEllipse", dynlib: coredll.}
 proc ellipseBox*(img: ptr TArr; box: TBox2D; color: TScalar; 
-                 thickness: cint = 1; line_type: cint = 8; shift: cint = 0) {.
+                 thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
     cdecl.} = 
   var axes: TSize
   axes.width = math.round(box.size.width.float * 5.0000000000000000e-01).cint
   axes.height = math.round(box.size.height.float * 5.0000000000000000e-01).cint
-  ellipse(img, PointFrom32f(box.center), axes, box.angle, 0, 360, color, 
-          thickness, line_type, shift)
+  ellipse(img, pointFrom32f(box.center), axes, box.angle, 0, 360, color, 
+          thickness, lineType, shift)
 
 # Fills convex or monotonous polygon. 
 
 proc fillConvexPoly*(img: ptr TArr; pts: ptr TPoint; npts: cint; color: TScalar; 
-                     line_type: cint = 8; shift: cint = 0) {.cdecl, 
+                     lineType: cint = 8; shift: cint = 0) {.cdecl, 
     importc: "cvFillConvexPoly", dynlib: coredll.}
 # Fills an area bounded by one or more arbitrary polygons 
 
 proc fillPoly*(img: ptr TArr; pts: ptr ptr TPoint; npts: ptr cint; 
-               contours: cint; color: TScalar; line_type: cint = 8; 
+               contours: cint; color: TScalar; lineType: cint = 8; 
                shift: cint = 0) {.cdecl, importc: "cvFillPoly", dynlib: coredll.}
 # Draws one or more polygonal curves 
 
 proc polyLine*(img: ptr TArr; pts: ptr ptr TPoint; npts: ptr cint; 
-               contours: cint; is_closed: cint; color: TScalar; 
-               thickness: cint = 1; line_type: cint = 8; shift: cint = 0) {.
+               contours: cint; isClosed: cint; color: TScalar; 
+               thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
     cdecl, importc: "cvPolyLine", dynlib: coredll.}
 const 
   drawRect* = rectangle
@@ -1460,15 +1460,15 @@ const
 #   by the rectangular window
 #   (0<=x<img_size.width, 0<=y<img_size.height). 
 
-proc clipLine*(img_size: TSize; pt1: ptr TPoint; pt2: ptr TPoint): cint {.cdecl, 
+proc clipLine*(imgSize: TSize; pt1: ptr TPoint; pt2: ptr TPoint): cint {.cdecl, 
     importc: "cvClipLine", dynlib: coredll.}
 # Initializes line iterator. Initially, line_iterator->ptr will point
 #   to pt1 (or pt2, see left_to_right description) location in the image.
 #   Returns the number of pixels on the line between the ending points. 
 
 proc initLineIterator*(image: ptr TArr; pt1: TPoint; pt2: TPoint; 
-                       line_iterator: ptr TLineIterator; connectivity: cint = 8; 
-                       left_to_right: cint = 0): cint {.cdecl, 
+                       lineIterator: ptr TLineIterator; connectivity: cint = 8; 
+                       leftToRight: cint = 0): cint {.cdecl, 
     importc: "cvInitLineIterator", dynlib: coredll.}
 # Moves iterator to the next line point 
 
@@ -1496,7 +1496,7 @@ type
   TFont* {.pure, final.} = object 
     nameFont*: cstring        #Qt:nameFont
     color*: TScalar           #Qt:ColorFont -> cvScalar(blue_component, green_component, red\_component[, alpha_component])
-    font_face*: cint          #Qt: bool italic         /* =CV_FONT_* */
+    fontFace*: cint          #Qt: bool italic         /* =CV_FONT_* */
     ascii*: ptr cint          # font data and metrics 
     greek*: ptr cint
     cyrillic*: ptr cint
@@ -1505,14 +1505,14 @@ type
     shear*: cfloat            # slope coefficient: 0 - normal, >0 - italic 
     thickness*: cint          #Qt: weight               /* letters thickness */
     dx*: cfloat               # horizontal interval between letters 
-    line_type*: cint          #Qt: PointSize
+    lineType*: cint          #Qt: PointSize
   
 
 # Initializes font structure used further in cvPutText 
 
-proc initFont*(font: ptr TFont; font_face: cint; hscale: cdouble; 
+proc initFont*(font: ptr TFont; fontFace: cint; hscale: cdouble; 
                vscale: cdouble; shear: cdouble = 0; thickness: cint = 1; 
-               line_type: cint = 8) {.cdecl, importc: "cvInitFont", 
+               lineType: cint = 8) {.cdecl, importc: "cvInitFont", 
                                       dynlib: coredll.}
 proc font*(scale: cdouble; thickness: cint = 1): TFont {.cdecl.} = 
   var font: TFont
@@ -1526,14 +1526,14 @@ proc putText*(img: ptr TArr; text: cstring; org: TPoint; font: ptr TFont;
               color: TScalar) {.cdecl, importc: "cvPutText", dynlib: coredll.}
 # Calculates bounding box of text stroke (useful for alignment) 
 
-proc getTextSize*(text_string: cstring; font: ptr TFont; text_size: ptr TSize; 
+proc getTextSize*(textString: cstring; font: ptr TFont; textSize: ptr TSize; 
                   baseline: ptr cint) {.cdecl, importc: "cvGetTextSize", 
                                         dynlib: coredll.}
 # Unpacks color value, if arrtype is CV_8UC?, <color> is treated as
 #   packed color value, otherwise the first channels (depending on arrtype)
 #   of destination scalar are set to the same value = <color> 
 
-proc colorToScalar*(packed_color: cdouble; arrtype: cint): TScalar {.cdecl, 
+proc colorToScalar*(packedColor: cdouble; arrtype: cint): TScalar {.cdecl, 
     importc: "cvColorToScalar", dynlib: coredll.}
 # Returns the polygon points which make up the given ellipse.  The ellipse is define by
 #   the box of size 'axes' rotated 'angle' around the 'center'.  A partial sweep
@@ -1542,14 +1542,14 @@ proc colorToScalar*(packed_color: cdouble; arrtype: cint): TScalar {.cdecl,
 #   hold the result.  The total number of points stored into 'pts' is returned by this
 #   function. 
 
-proc ellipse2Poly*(center: TPoint; axes: TSize; angle: cint; arc_start: cint; 
-                   arc_end: cint; pts: ptr TPoint; delta: cint): cint {.cdecl, 
+proc ellipse2Poly*(center: TPoint; axes: TSize; angle: cint; arcStart: cint; 
+                   arcEnd: cint; pts: ptr TPoint; delta: cint): cint {.cdecl, 
     importc: "cvEllipse2Poly", dynlib: coredll.}
 # Draws contour outlines or filled interiors on the image 
 
-proc drawContours*(img: ptr TArr; contour: ptr TSeq; external_color: TScalar; 
-                   hole_color: TScalar; max_level: cint; thickness: cint = 1; 
-                   line_type: cint = 8; offset: TPoint = Point(0, 0)) {.cdecl, 
+proc drawContours*(img: ptr TArr; contour: ptr TSeq; externalColor: TScalar; 
+                   holeColor: TScalar; maxLevel: cint; thickness: cint = 1; 
+                   lineType: cint = 8; offset: TPoint = point(0, 0)) {.cdecl, 
     importc: "cvDrawContours", dynlib: coredll.}
 # Does look-up transformation. Elements of the source array
 #   (that should be 8uC1 or 8sC1) are used as indexes in lutarr 256-element table 
@@ -1562,15 +1562,15 @@ type
   TTreeNodeIterator* {.pure, final.} = object 
     node*: pointer
     level*: cint
-    max_level*: cint
+    maxLevel*: cint
 
 
-proc initTreeNodeIterator*(tree_iterator: ptr TTreeNodeIterator; first: pointer; 
-                           max_level: cint) {.cdecl, 
+proc initTreeNodeIterator*(treeIterator: ptr TTreeNodeIterator; first: pointer; 
+                           maxLevel: cint) {.cdecl, 
     importc: "cvInitTreeNodeIterator", dynlib: coredll.}
-proc nextTreeNode*(tree_iterator: ptr TTreeNodeIterator): pointer {.cdecl, 
+proc nextTreeNode*(treeIterator: ptr TTreeNodeIterator): pointer {.cdecl, 
     importc: "cvNextTreeNode", dynlib: coredll.}
-proc prevTreeNode*(tree_iterator: ptr TTreeNodeIterator): pointer {.cdecl, 
+proc prevTreeNode*(treeIterator: ptr TTreeNodeIterator): pointer {.cdecl, 
     importc: "cvPrevTreeNode", dynlib: coredll.}
 # Inserts sequence into tree with specified "parent" sequence.
 #   If parent is equal to frame (e.g. the most external contour),
@@ -1585,7 +1585,7 @@ proc removeNodeFromTree*(node: pointer; frame: pointer) {.cdecl,
 # Gathers pointers to all the sequences,
 #   accessible from the <first>, to the single sequence 
 
-proc treeToNodeSeq*(first: pointer; header_size: cint; storage: ptr TMemStorage): ptr TSeq {.
+proc treeToNodeSeq*(first: pointer; headerSize: cint; storage: ptr TMemStorage): ptr TSeq {.
     cdecl, importc: "cvTreeToNodeSeq", dynlib: coredll.}
 # The function implements the K-means algorithm for clustering an array of sample
 #   vectors in a specified number of classes 
@@ -1603,16 +1603,16 @@ discard """ proc kMeans2*(samples: ptr TArr; cluster_count: cint; labels: ptr TA
 #\***************************************************************************************
 # Add the function pointers table with associated information to the IPP primitives list 
 
-proc registerModule*(module_info: ptr TModuleInfo): cint {.cdecl, 
+proc registerModule*(moduleInfo: ptr TModuleInfo): cint {.cdecl, 
     importc: "cvRegisterModule", dynlib: coredll.}
 # Loads optimized functions from IPP, MKL etc. or switches back to pure C code 
 
-proc useOptimized*(on_off: cint): cint {.cdecl, importc: "cvUseOptimized", 
+proc useOptimized*(onOff: cint): cint {.cdecl, importc: "cvUseOptimized", 
     dynlib: coredll.}
 # Retrieves information about the registered modules and loaded optimized plugins 
 
-proc getModuleInfo*(module_name: cstring; version: cstringArray; 
-                    loaded_addon_plugins: cstringArray) {.cdecl, 
+proc getModuleInfo*(moduleName: cstring; version: cstringArray; 
+                    loadedAddonPlugins: cstringArray) {.cdecl, 
     importc: "cvGetModuleInfo", dynlib: coredll.}
 type 
   TAllocFunc* = proc (size: csize; userdata: pointer): pointer {.cdecl.}
@@ -1621,7 +1621,7 @@ type
 # Set user-defined memory managment functions (substitutors for malloc and free) that
 #   will be called by cvAlloc, cvFree and higher-level functions (e.g. cvCreateImage) 
 
-proc setMemoryManager*(alloc_func: TAllocFunc = nil; free_func: TFreeFunc = nil; 
+proc setMemoryManager*(allocFunc: TAllocFunc = nil; freeFunc: TFreeFunc = nil; 
                        userdata: pointer = nil) {.cdecl, 
     importc: "cvSetMemoryManager", dynlib: coredll.}
 type 
@@ -1640,12 +1640,12 @@ type
 
 # Makes OpenCV use IPL functions for IplImage allocation/deallocation 
 
-proc setIPLAllocators*(create_header: TiplCreateImageHeader; 
-                       allocate_data: TiplAllocateImageData; 
-                       deallocate: TiplDeallocate; create_roi: TiplCreateROI; 
-                       clone_image: TiplCloneImage) {.cdecl, 
+proc setIPLAllocators*(createHeader: TiplCreateImageHeader; 
+                       allocateData: TiplAllocateImageData; 
+                       deallocate: TiplDeallocate; createRoi: TiplCreateROI; 
+                       cloneImage: TiplCloneImage) {.cdecl, 
     importc: "cvSetIPLAllocators", dynlib: coredll.}
-template TURN_ON_IPL_COMPATIBILITY*(): expr = 
+template Turn_On_Ipl_Compatibility*(): expr = 
   SetIPLAllocators(iplCreateImageHeader, iplAllocateImage, iplDeallocate, 
                    iplCreateROI, iplCloneImage)
 
@@ -1664,13 +1664,13 @@ proc releaseFileStorage*(fs: ptr ptr TFileStorage) {.cdecl,
     importc: "cvReleaseFileStorage", dynlib: coredll.}
 # returns attribute value or 0 (NULL) if there is no such attribute 
 
-proc attrValue*(attr: ptr TAttrList; attr_name: cstring): cstring {.cdecl, 
+proc attrValue*(attr: ptr TAttrList; attrName: cstring): cstring {.cdecl, 
     importc: "cvAttrValue", dynlib: coredll.}
 # starts writing compound structure (map or sequence) 
 
-proc startWriteStruct*(fs: ptr TFileStorage; name: cstring; struct_flags: cint; 
-                       type_name: cstring = nil; 
-                       attributes: TAttrList = AttrList()) {.cdecl, 
+proc startWriteStruct*(fs: ptr TFileStorage; name: cstring; structFlags: cint; 
+                       typeName: cstring = nil; 
+                       attributes: TAttrList = attrList()) {.cdecl, 
     importc: "cvStartWriteStruct", dynlib: coredll.}
 # finishes writing compound structure 
 
@@ -1691,13 +1691,13 @@ proc writeString*(fs: ptr TFileStorage; name: cstring; str: cstring;
                                      dynlib: coredll.}
 # writes a comment 
 
-proc writeComment*(fs: ptr TFileStorage; comment: cstring; eol_comment: cint) {.
+proc writeComment*(fs: ptr TFileStorage; comment: cstring; eolComment: cint) {.
     cdecl, importc: "cvWriteComment", dynlib: coredll.}
 # writes instance of a standard type (matrix, image, sequence, graph etc.)
 #   or user-defined type 
 
 proc write*(fs: ptr TFileStorage; name: cstring; thePtr: pointer; 
-            attributes: TAttrList = AttrList()) {.cdecl, importc: "cvWrite", 
+            attributes: TAttrList = attrList()) {.cdecl, importc: "cvWrite", 
     dynlib: coredll.}
 # starts the next stream 
 
@@ -1711,38 +1711,38 @@ proc writeRawData*(fs: ptr TFileStorage; src: pointer; len: cint; dt: cstring) {
 #   if there is no such a key in the storage 
 
 proc getHashedKey*(fs: ptr TFileStorage; name: cstring; len: cint = - 1; 
-                   create_missing: cint = 0): ptr TStringHashNode {.cdecl, 
+                   createMissing: cint = 0): ptr TStringHashNode {.cdecl, 
     importc: "cvGetHashedKey", dynlib: coredll.}
 # returns file node with the specified key within the specified map
 #   (collection of named nodes) 
 
-proc getRootFileNode*(fs: ptr TFileStorage; stream_index: cint = 0): ptr TFileNode {.
+proc getRootFileNode*(fs: ptr TFileStorage; streamIndex: cint = 0): ptr TFileNode {.
     cdecl, importc: "cvGetRootFileNode", dynlib: coredll.}
 # returns file node with the specified key within the specified map
 #   (collection of named nodes) 
 
 proc getFileNode*(fs: ptr TFileStorage; map: ptr TFileNode; 
-                  key: ptr TStringHashNode; create_missing: cint = 0): ptr TFileNode {.
+                  key: ptr TStringHashNode; createMissing: cint = 0): ptr TFileNode {.
     cdecl, importc: "cvGetFileNode", dynlib: coredll.}
 # this is a slower version of cvGetFileNode that takes the key as a literal string 
 
 proc getFileNodeByName*(fs: ptr TFileStorage; map: ptr TFileNode; name: cstring): ptr TFileNode {.
     cdecl, importc: "cvGetFileNodeByName", dynlib: coredll.}
-proc readInt*(node: ptr TFileNode; default_value: cint = 0): cint {.cdecl.} = 
+proc readInt*(node: ptr TFileNode; defaultValue: cint = 0): cint {.cdecl.} = 
   return
     if not node.isNil:
-      default_value
+      defaultValue
     else:
-      if NODE_IS_INT(node.tag):
+      if Node_Is_Int(node.tag):
         node.data.i
       else:
-        if NODE_IS_REAL(node.tag):
+        if Node_Is_Real(node.tag):
           math.round(node.data.f).cint
         else: 0x7FFFFFFF
 
 proc readIntByName*(fs: ptr TFileStorage; map: ptr TFileNode; name: cstring; 
-                    default_value: cint = 0): cint {.cdecl.} = 
-  return readInt(getFileNodeByName(fs, map, name), default_value)
+                    defaultValue: cint = 0): cint {.cdecl.} = 
+  return readInt(getFileNodeByName(fs, map, name), defaultValue)
 
 # CV_INLINE double cvReadReal( const CvFileNode* node, double default_value CV_DEFAULT(0.0) )
 #{
@@ -1792,7 +1792,7 @@ proc readRawData*(fs: ptr TFileStorage; src: ptr TFileNode; dst: pointer;
                                  dynlib: coredll.}
 # writes a copy of file node to file storage 
 
-proc writeFileNode*(fs: ptr TFileStorage; new_node_name: cstring; 
+proc writeFileNode*(fs: ptr TFileStorage; newNodeName: cstring; 
                     node: ptr TFileNode; embed: cint) {.cdecl, 
     importc: "cvWriteFileNode", dynlib: coredll.}
 # returns name of file node 
@@ -1803,27 +1803,27 @@ proc getFileNodeName*(node: ptr TFileNode): cstring {.cdecl,
 
 proc registerType*(info: ptr TTypeInfo) {.cdecl, importc: "cvRegisterType", 
     dynlib: coredll.}
-proc unregisterType*(type_name: cstring) {.cdecl, importc: "cvUnregisterType", 
+proc unregisterType*(typeName: cstring) {.cdecl, importc: "cvUnregisterType", 
     dynlib: coredll.}
 proc firstType*(): ptr TTypeInfo {.cdecl, importc: "cvFirstType", 
                                    dynlib: coredll.}
-proc findType*(type_name: cstring): ptr TTypeInfo {.cdecl, 
+proc findType*(typeName: cstring): ptr TTypeInfo {.cdecl, 
     importc: "cvFindType", dynlib: coredll.}
-proc typeOf*(struct_ptr: pointer): ptr TTypeInfo {.cdecl, importc: "cvTypeOf", 
+proc typeOf*(structPtr: pointer): ptr TTypeInfo {.cdecl, importc: "cvTypeOf", 
     dynlib: coredll.}
 # universal functions 
 
-proc release*(struct_ptr: ptr pointer) {.cdecl, importc: "cvRelease", 
+proc release*(structPtr: ptr pointer) {.cdecl, importc: "cvRelease", 
     dynlib: coredll.}
-proc clone*(struct_ptr: pointer): pointer {.cdecl, importc: "cvClone", 
+proc clone*(structPtr: pointer): pointer {.cdecl, importc: "cvClone", 
     dynlib: coredll.}
 # simple API for reading/writing data 
 
-proc save*(filename: cstring; struct_ptr: pointer; name: cstring = nil; 
-           comment: cstring = nil; attributes: TAttrList = AttrList()) {.cdecl, 
+proc save*(filename: cstring; structPtr: pointer; name: cstring = nil; 
+           comment: cstring = nil; attributes: TAttrList = attrList()) {.cdecl, 
     importc: "cvSave", dynlib: coredll.}
 proc load*(filename: cstring; memstorage: ptr TMemStorage = nil; 
-           name: cstring = nil; real_name: cstringArray = nil): pointer {.cdecl, 
+           name: cstring = nil; realName: cstringArray = nil): pointer {.cdecl, 
     importc: "cvLoad", dynlib: coredll.}
 #********************************** Measuring Execution Time **************************
 # helper functions for RNG initialization and accurate time measurement:
@@ -1882,8 +1882,8 @@ proc setErrMode*(mode: cint): cint {.cdecl, importc: "cvSetErrMode",
 # writing message to stderr, terminating application etc.)
 # depending on the current error mode 
 
-proc error*(status: cint; func_name: cstring; err_msg: cstring; 
-            file_name: cstring; line: cint) {.cdecl, importc: "cvError", 
+proc error*(status: cint; funcName: cstring; errMsg: cstring; 
+            fileName: cstring; line: cint) {.cdecl, importc: "cvError", 
     dynlib: coredll.}
 # Retrieves textual description of the error given its code 
 
@@ -1891,22 +1891,22 @@ proc errorStr*(status: cint): cstring {.cdecl, importc: "cvErrorStr",
                                         dynlib: coredll.}
 # Retrieves detailed information about the last error occured 
 
-proc getErrInfo*(errcode_desc: cstringArray; description: cstringArray; 
+proc getErrInfo*(errcodeDesc: cstringArray; description: cstringArray; 
                  filename: cstringArray; line: ptr cint): cint {.cdecl, 
     importc: "cvGetErrInfo", dynlib: coredll.}
 # Maps IPP error codes to the counterparts from OpenCV 
 
-proc errorFromIppStatus*(ipp_status: cint): cint {.cdecl, 
+proc errorFromIppStatus*(ippStatus: cint): cint {.cdecl, 
     importc: "cvErrorFromIppStatus", dynlib: coredll.}
 type 
-  TErrorCallback* = proc (status: cint; func_name: cstring; err_msg: cstring; 
-                          file_name: cstring; line: cint; userdata: pointer): cint {.
+  TErrorCallback* = proc (status: cint; funcName: cstring; errMsg: cstring; 
+                          fileName: cstring; line: cint; userdata: pointer): cint {.
       cdecl.}
 
 # Assigns a new error-handling function 
 
-proc redirectError*(error_handler: TErrorCallback; userdata: pointer = nil; 
-                    prev_userdata: ptr pointer = nil): TErrorCallback {.cdecl, 
+proc redirectError*(errorHandler: TErrorCallback; userdata: pointer = nil; 
+                    prevUserdata: ptr pointer = nil): TErrorCallback {.cdecl, 
     importc: "cvRedirectError", dynlib: coredll.}
 #
 # Output to:
@@ -1915,12 +1915,12 @@ proc redirectError*(error_handler: TErrorCallback; userdata: pointer = nil;
 # cvGuiBoxReport - MessageBox(WIN32)
 # 
 
-proc nulDevReport*(status: cint; func_name: cstring; err_msg: cstring; 
-                   file_name: cstring; line: cint; userdata: pointer): cint {.
+proc nulDevReport*(status: cint; funcName: cstring; errMsg: cstring; 
+                   fileName: cstring; line: cint; userdata: pointer): cint {.
     cdecl, importc: "cvNulDevReport", dynlib: coredll.}
-proc stdErrReport*(status: cint; func_name: cstring; err_msg: cstring; 
-                   file_name: cstring; line: cint; userdata: pointer): cint {.
+proc stdErrReport*(status: cint; funcName: cstring; errMsg: cstring; 
+                   fileName: cstring; line: cint; userdata: pointer): cint {.
     cdecl, importc: "cvStdErrReport", dynlib: coredll.}
-proc guiBoxReport*(status: cint; func_name: cstring; err_msg: cstring; 
-                   file_name: cstring; line: cint; userdata: pointer): cint {.
+proc guiBoxReport*(status: cint; funcName: cstring; errMsg: cstring; 
+                   fileName: cstring; line: cint; userdata: pointer): cint {.
     cdecl, importc: "cvGuiBoxReport", dynlib: coredll.}

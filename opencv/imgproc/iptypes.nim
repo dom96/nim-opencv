@@ -387,7 +387,7 @@ type
   TChainPtReader* {.pure, final.} = object 
     code*: char               #CV_SEQ_READER_FIELDS()
     pt*: TPoint
-    deltas*: array[0..2 - 1, array[0..8 - 1, schar]]
+    deltas*: array[0..2 - 1, array[0..8 - 1, Schar]]
 
 
 # initializes 8-element array for fast access to 3x3 neighborhood of a pixel 
