@@ -42,7 +42,7 @@
 {.deadCodeElim: on.}
 when defined(windows): 
   const 
-    highguidll* = "opencv_highgui(249|).dll"
+    highguidll* = "(lib|)opencv_highgui(249|231)d.dll"
 elif defined(macosx): 
   const 
     highguidll* = "libopencv_highgui.dylib"
