@@ -1,16 +1,16 @@
-# Nimrod OpenCV wrapper
+# Nim OpenCV wrapper
 
-This is a pretty rough Nimrod OpenCV wrapper. YMMV.
+This is a pretty rough Nim OpenCV wrapper. YMMV.
 
 ## Installation
 
 ```bash
-$ babel install opencv
+$ nimble install opencv
 ```
 
 ## Usage
 
-```nimrod
+```nim
 import opencv/imgproc, opencv/highgui, opencv/core
 ```
 

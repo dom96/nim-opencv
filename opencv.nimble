@@ -8,4 +8,4 @@ license       = "MIT"
 skipDirs = "tests"
 
 [Deps]
-Requires: "nimrod >= 0.9.3"
+Requires: "nim >= 0.9.3"
