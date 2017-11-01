@@ -43,7 +43,7 @@
 {.deadCodeElim: on.}
 when defined(windows):
   const
-    coredll* = "(lib|)opencv_core(249|231)d.dll"
+    coredll* = "(lib|)opencv_core(|249|231)(|d).dll"
 elif defined(macosx):
   const
     coredll* = "libopencv_core.dylib"
@@ -122,36 +122,36 @@ proc getImageROI*(image: ptr TIplImage): TRect {.cdecl,
     importc: "cvGetImageROI", dynlib: coredll.}
 # Allocates and initalizes CvMat header
 
-proc createMatHeader*(rows: cint; cols: cint; theType: cint): ptr TMat {.cdecl,
+proc createMatHeader*(rows: cint; cols: cint; theType: cint): MatPtr {.cdecl,
     importc: "cvCreateMatHeader", dynlib: coredll.}
 
 
 # Initializes CvMat header
 
-proc initMatHeader*(mat: ptr TMat; rows: cint; cols: cint; theType: cint;
-                    data: pointer = nil; step: cint = AUTO_STEP): ptr TMat {.
+proc initMatHeader*(mat: MatPtr; rows: cint; cols: cint; theType: cint;
+                    data: pointer = nil; step: cint = AUTO_STEP): MatPtr {.
     cdecl, importc: "cvInitMatHeader", dynlib: coredll.}
 # Allocates and initializes CvMat header and allocates data
 
-proc createMat*(rows: cint; cols: cint; theType: cint): ptr TMat {.cdecl,
+proc createMat*(rows: cint; cols: cint; theType: cint): MatPtr {.cdecl,
     importc: "cvCreateMat", dynlib: coredll.}
 # Releases CvMat header and deallocates matrix data
 #   (reference counting is used for data)
 
-proc releaseMat*(mat: ptr ptr TMat) {.cdecl, importc: "cvReleaseMat",
+proc releaseMat*(mat: ptr MatPtr) {.cdecl, importc: "cvReleaseMat",
                                       dynlib: coredll.}
 # Decrements CvMat data reference counter and deallocates the data if
 #   it reaches 0
 
-discard """ proc decRefData*(arr: ptr TArr) {.cdecl.} =
+discard """ proc decRefData*(arr: ImgPtr) {.cdecl.} =
   if IS_MAT(arr):
-    var mat: ptr TMat = cast[ptr TMat](arr)
+    var mat: MatPtr = cast[MatPtr](arr)
     mat.data.thePtr = nil
     if mat.refcount != nil and dec(mat.refcount[]) == 0:
       Free(addr(mat.refcount))
     mat.refcount = nil
   elif IS_MATND(arr):
-    var mat: ptr TMatND = cast[ptr TMatND](arr)
+    var mat: MatNDPtr = cast[MatNDPtr](arr)
     mat.data.thePtr = nil
     if mat.refcount != nil and dec(mat.refcount[]) == 0:
       Free(addr(mat.refcount))
@@ -159,24 +159,24 @@ discard """ proc decRefData*(arr: ptr TArr) {.cdecl.} =
 
 # Increments CvMat data reference counter
 
-discard """ proc incRefData*(arr: ptr TArr): cint {.cdecl.} =
+discard """ proc incRefData*(arr: ImgPtr): cint {.cdecl.} =
   var refcount: cint = 0
   if IS_MAT(arr):
-    var mat: ptr TMat = cast[ptr TMat](arr)
+    var mat: MatPtr = cast[MatPtr](arr)
     if mat.refcount != nil: refcount = inc(mat.refcount[])
   elif IS_MATND(arr):
-    var mat: ptr TMatND = cast[ptr TMatND](arr)
+    var mat: MatNDPtr = cast[MatNDPtr](arr)
     if mat.refcount != nil: refcount = inc(mat.refcount[])
   return refcount """
 
 # Creates an exact copy of the input matrix (except, may be, step value)
 
-proc cloneMat*(mat: ptr TMat): ptr TMat {.cdecl, importc: "cvCloneMat",
+proc cloneMat*(mat: MatPtr): MatPtr {.cdecl, importc: "cvCloneMat",
     dynlib: coredll.}
 # Makes a new matrix from <rect> subrectangle of input array.
 #   No data is copied
 
-proc getSubRect*(arr: ptr TArr; submat: ptr TMat; rect: TRect): ptr TMat {.
+proc getSubRect*(arr: ImgPtr; submat: MatPtr; rect: TRect): MatPtr {.
     cdecl, importc: "cvGetSubRect", dynlib: coredll.}
 const
   GetSubArr* = getSubRect
@@ -184,18 +184,18 @@ const
 # Selects row span of the input array: arr(start_row:delta_row:end_row,:)
 #    (end_row is not included into the span).
 
-proc getRows*(arr: ptr TArr; submat: ptr TMat; startRow: cint; endRow: cint;
-              deltaRow: cint = 1): ptr TMat {.cdecl, importc: "cvGetRows",
+proc getRows*(arr: ImgPtr; submat: MatPtr; startRow: cint; endRow: cint;
+              deltaRow: cint = 1): MatPtr {.cdecl, importc: "cvGetRows",
     dynlib: coredll.}
-proc getRow*(arr: ptr TArr; submat: ptr TMat; row: cint): ptr TMat {.cdecl.} =
+proc getRow*(arr: ImgPtr; submat: MatPtr; row: cint): MatPtr {.cdecl.} =
   return getRows(arr, submat, row, row + 1, 1)
 
 # Selects column span of the input array: arr(:,start_col:end_col)
 #   (end_col is not included into the span)
 
-proc getCols*(arr: ptr TArr; submat: ptr TMat; startCol: cint; endCol: cint): ptr TMat {.
+proc getCols*(arr: ImgPtr; submat: MatPtr; startCol: cint; endCol: cint): MatPtr {.
     cdecl, importc: "cvGetCols", dynlib: coredll.}
-proc getCol*(arr: ptr TArr; submat: ptr TMat; col: cint): ptr TMat {.cdecl.} =
+proc getCol*(arr: ImgPtr; submat: MatPtr; col: cint): MatPtr {.cdecl.} =
   return getCols(arr, submat, col, col + 1)
 
 # Select a diagonal of the input array.
@@ -203,7 +203,7 @@ proc getCol*(arr: ptr TArr; submat: ptr TMat; col: cint): ptr TMat {.cdecl.} =
 #   <0 - below the main one).
 #   The diagonal will be represented as a column (nx1 matrix).
 
-proc getDiag*(arr: ptr TArr; submat: ptr TMat; diag: cint = 0): ptr TMat {.
+proc getDiag*(arr: ImgPtr; submat: MatPtr; diag: cint = 0): MatPtr {.
     cdecl, importc: "cvGetDiag", dynlib: coredll.}
 # low-level scalar <-> raw data conversion functions
 
@@ -214,25 +214,25 @@ proc rawDataToScalar*(data: pointer; theType: cint; scalar: ptr TScalar) {.
     cdecl, importc: "cvRawDataToScalar", dynlib: coredll.}
 # Allocates and initializes CvMatND header
 
-proc createMatNDHeader*(dims: cint; sizes: ptr cint; theType: cint): ptr TMatND {.
+proc createMatNDHeader*(dims: cint; sizes: ptr cint; theType: cint): MatNDPtr {.
     cdecl, importc: "cvCreateMatNDHeader", dynlib: coredll.}
 # Allocates and initializes CvMatND header and allocates data
 
-proc createMatND*(dims: cint; sizes: ptr cint; theType: cint): ptr TMatND {.
+proc createMatND*(dims: cint; sizes: ptr cint; theType: cint): MatNDPtr {.
     cdecl, importc: "cvCreateMatND", dynlib: coredll.}
 # Initializes preallocated CvMatND header
 
-proc initMatNDHeader*(mat: ptr TMatND; dims: cint; sizes: ptr cint;
-                      theType: cint; data: pointer = nil): ptr TMatND {.cdecl,
+proc initMatNDHeader*(mat: MatNDPtr; dims: cint; sizes: ptr cint;
+                      theType: cint; data: pointer = nil): MatNDPtr {.cdecl,
     importc: "cvInitMatNDHeader", dynlib: coredll.}
 # Releases CvMatND
 
-proc releaseMatND*(mat: ptr ptr TMatND) {.cdecl.} =
-  releaseMat(cast[ptr ptr TMat](mat))
+proc releaseMatND*(mat: ptr MatNDPtr) {.cdecl.} =
+  releaseMat(cast[ptr MatPtr](mat))
 
 # Creates a copy of CvMatND (except, may be, steps)
 
-proc cloneMatND*(mat: ptr TMatND): ptr TMatND {.cdecl, importc: "cvCloneMatND",
+proc cloneMatND*(mat: MatNDPtr): MatNDPtr {.cdecl, importc: "cvCloneMatND",
     dynlib: coredll.}
 # Allocates and initializes CvSparseMat header and allocates data
 
@@ -282,7 +282,7 @@ type
     size*: TSize              # maximal common linear size: { width = size, height = 1 }
     thePtr*: array[0..MAX_ARR - 1, ptr cuchar] # pointers to the array slices
     stack*: array[0..MAX_DIM - 1, cint] # for internal use
-    hdr*: array[0..MAX_ARR - 1, ptr TMatND] # pointers to the headers of the
+    hdr*: array[0..MAX_ARR - 1, MatNDPtr] # pointers to the headers of the
                                             #                                 matrices that are processed
 
 
@@ -295,8 +295,8 @@ const
 #   (the function together with cvNextArraySlice is used for
 #    N-ari element-wise operations)
 
-proc initNArrayIterator*(count: cint; arrs: ptr ptr TArr; mask: ptr TArr;
-                         stubs: ptr TMatND; arrayIterator: ptr TNArrayIterator;
+proc initNArrayIterator*(count: cint; arrs: ptr ImgPtr; mask: ImgPtr;
+                         stubs: MatNDPtr; arrayIterator: ptr TNArrayIterator;
                          flags: cint = 0): cint {.cdecl,
     importc: "cvInitNArrayIterator", dynlib: coredll.}
 # returns zero value if iteration is finished, non-zero (slice length) otherwise
@@ -306,27 +306,27 @@ proc nextNArraySlice*(arrayIterator: ptr TNArrayIterator): cint {.cdecl,
 # Returns type of array elements:
 #   CV_8UC1 ... CV_64FC4 ...
 
-proc getElemType*(arr: ptr TArr): cint {.cdecl, importc: "cvGetElemType",
+proc getElemType*(arr: ImgPtr): cint {.cdecl, importc: "cvGetElemType",
     dynlib: coredll.}
 # Retrieves number of an array dimensions and
 #   optionally sizes of the dimensions
 
-proc getDims*(arr: ptr TArr; sizes: ptr cint = nil): cint {.cdecl,
+proc getDims*(arr: ImgPtr; sizes: ptr cint = nil): cint {.cdecl,
     importc: "cvGetDims", dynlib: coredll.}
 # Retrieves size of a particular array dimension.
 #   For 2d arrays cvGetDimSize(arr,0) returns number of rows (image height)
 #   and cvGetDimSize(arr,1) returns number of columns (image width)
 
-proc getDimSize*(arr: ptr TArr; index: cint): cint {.cdecl,
+proc getDimSize*(arr: ImgPtr; index: cint): cint {.cdecl,
     importc: "cvGetDimSize", dynlib: coredll.}
 # ptr = &arr(idx0,idx1,...). All indexes are zero-based,
 #   the major dimensions go first (e.g. (y,x) for 2D, (z,y,x) for 3D
 
-proc ptr1D*(arr: ptr TArr; idx0: cint; theType: ptr cint = nil): ptr cuchar {.
+proc ptr1D*(arr: ImgPtr; idx0: cint; theType: ptr cint = nil): ptr cuchar {.
     cdecl, importc: "cvPtr1D", dynlib: coredll.}
-proc ptr2D*(arr: ptr TArr; idx0: cint; idx1: cint; theType: ptr cint = nil): ptr cuchar {.
+proc ptr2D*(arr: ImgPtr; idx0: cint; idx1: cint; theType: ptr cint = nil): ptr cuchar {.
     cdecl, importc: "cvPtr2D", dynlib: coredll.}
-proc ptr3D*(arr: ptr TArr; idx0: cint; idx1: cint; idx2: cint;
+proc ptr3D*(arr: ImgPtr; idx0: cint; idx1: cint; idx2: cint;
             theType: ptr cint = nil): ptr cuchar {.cdecl, importc: "cvPtr3D",
     dynlib: coredll.}
 # For CvMat or IplImage number of indices should be 2
@@ -334,53 +334,53 @@ proc ptr3D*(arr: ptr TArr; idx0: cint; idx1: cint; idx2: cint;
 #   For CvMatND or CvSparseMat number of infices should match number of <dims> and
 #   indices order should match the array dimension order.
 
-proc ptrND*(arr: ptr TArr; idx: ptr cint; theType: ptr cint = nil;
+proc ptrND*(arr: ImgPtr; idx: ptr cint; theType: ptr cint = nil;
             createNode: cint = 1; precalcHashval: ptr cuint = nil): ptr cuchar {.
     cdecl, importc: "cvPtrND", dynlib: coredll.}
 # value = arr(idx0,idx1,...)
 
-proc get1D*(arr: ptr TArr; idx0: cint): TScalar {.cdecl, importc: "cvGet1D",
+proc get1D*(arr: ImgPtr; idx0: cint): TScalar {.cdecl, importc: "cvGet1D",
     dynlib: coredll.}
-proc get2D*(arr: ptr TArr; idx0: cint; idx1: cint): TScalar {.cdecl,
+proc get2D*(arr: ImgPtr; idx0: cint; idx1: cint): TScalar {.cdecl,
     importc: "cvGet2D", dynlib: coredll.}
-proc get3D*(arr: ptr TArr; idx0: cint; idx1: cint; idx2: cint): TScalar {.cdecl,
+proc get3D*(arr: ImgPtr; idx0: cint; idx1: cint; idx2: cint): TScalar {.cdecl,
     importc: "cvGet3D", dynlib: coredll.}
-proc getND*(arr: ptr TArr; idx: ptr cint): TScalar {.cdecl, importc: "cvGetND",
+proc getND*(arr: ImgPtr; idx: ptr cint): TScalar {.cdecl, importc: "cvGetND",
     dynlib: coredll.}
 # for 1-channel arrays
 
-proc getReal1D*(arr: ptr TArr; idx0: cint): cdouble {.cdecl,
+proc getReal1D*(arr: ImgPtr; idx0: cint): cdouble {.cdecl,
     importc: "cvGetReal1D", dynlib: coredll.}
-proc getReal2D*(arr: ptr TArr; idx0: cint; idx1: cint): cdouble {.cdecl,
+proc getReal2D*(arr: ImgPtr; idx0: cint; idx1: cint): cdouble {.cdecl,
     importc: "cvGetReal2D", dynlib: coredll.}
-proc getReal3D*(arr: ptr TArr; idx0: cint; idx1: cint; idx2: cint): cdouble {.
+proc getReal3D*(arr: ImgPtr; idx0: cint; idx1: cint; idx2: cint): cdouble {.
     cdecl, importc: "cvGetReal3D", dynlib: coredll.}
-proc getRealND*(arr: ptr TArr; idx: ptr cint): cdouble {.cdecl,
+proc getRealND*(arr: ImgPtr; idx: ptr cint): cdouble {.cdecl,
     importc: "cvGetRealND", dynlib: coredll.}
 # arr(idx0,idx1,...) = value
 
-proc set1D*(arr: ptr TArr; idx0: cint; value: TScalar) {.cdecl,
+proc set1D*(arr: ImgPtr; idx0: cint; value: TScalar) {.cdecl,
     importc: "cvSet1D", dynlib: coredll.}
-proc set2D*(arr: ptr TArr; idx0: cint; idx1: cint; value: TScalar) {.cdecl,
+proc set2D*(arr: ImgPtr; idx0: cint; idx1: cint; value: TScalar) {.cdecl,
     importc: "cvSet2D", dynlib: coredll.}
-proc set3D*(arr: ptr TArr; idx0: cint; idx1: cint; idx2: cint; value: TScalar) {.
+proc set3D*(arr: ImgPtr; idx0: cint; idx1: cint; idx2: cint; value: TScalar) {.
     cdecl, importc: "cvSet3D", dynlib: coredll.}
-proc setND*(arr: ptr TArr; idx: ptr cint; value: TScalar) {.cdecl,
+proc setND*(arr: ImgPtr; idx: ptr cint; value: TScalar) {.cdecl,
     importc: "cvSetND", dynlib: coredll.}
 # for 1-channel arrays
 
-proc setReal1D*(arr: ptr TArr; idx0: cint; value: cdouble) {.cdecl,
+proc setReal1D*(arr: ImgPtr; idx0: cint; value: cdouble) {.cdecl,
     importc: "cvSetReal1D", dynlib: coredll.}
-proc setReal2D*(arr: ptr TArr; idx0: cint; idx1: cint; value: cdouble) {.cdecl,
+proc setReal2D*(arr: ImgPtr; idx0: cint; idx1: cint; value: cdouble) {.cdecl,
     importc: "cvSetReal2D", dynlib: coredll.}
-proc setReal3D*(arr: ptr TArr; idx0: cint; idx1: cint; idx2: cint;
+proc setReal3D*(arr: ImgPtr; idx0: cint; idx1: cint; idx2: cint;
                 value: cdouble) {.cdecl, importc: "cvSetReal3D", dynlib: coredll.}
-proc setRealND*(arr: ptr TArr; idx: ptr cint; value: cdouble) {.cdecl,
+proc setRealND*(arr: ImgPtr; idx: ptr cint; value: cdouble) {.cdecl,
     importc: "cvSetRealND", dynlib: coredll.}
 # clears element of ND dense array,
 #   in case of sparse arrays it deletes the specified node
 
-proc clearND*(arr: ptr TArr; idx: ptr cint) {.cdecl, importc: "cvClearND",
+proc clearND*(arr: ImgPtr; idx: ptr cint) {.cdecl, importc: "cvClearND",
     dynlib: coredll.}
 # Converts CvArr (IplImage or CvMat,...) to CvMat.
 #   If the last parameter is non-zero, function can
@@ -388,12 +388,12 @@ proc clearND*(arr: ptr TArr; idx: ptr cint) {.cdecl, importc: "cvClearND",
 #   the last array's dimension is continous. The resultant
 #   matrix will be have appropriate (a huge) number of rows
 
-proc getMat*(arr: ptr TArr; header: ptr TMat; coi: ptr cint = nil;
-             allowND: cint = 0): ptr TMat {.cdecl, importc: "cvGetMat",
+proc getMat*(arr: ImgPtr; header: MatPtr; coi: ptr cint = nil;
+             allowND: cint = 0): MatPtr {.cdecl, importc: "cvGetMat",
     dynlib: coredll.}
 # Converts CvArr (IplImage or CvMat) to IplImage
 
-proc getImage*(arr: ptr TArr; imageHeader: ptr TIplImage): ptr TIplImage {.
+proc getImage*(arr: ImgPtr; imageHeader: ptr TIplImage): ptr TIplImage {.
     cdecl, importc: "cvGetImage", dynlib: coredll.}
 # Changes a shape of multi-dimensional array.
 #   new_cn == 0 means that number of channels remains unchanged.
@@ -406,75 +406,75 @@ proc getImage*(arr: ptr TArr; imageHeader: ptr TIplImage): ptr TIplImage {.
 #   CvMat header should be passed to the function
 #   else CvMatND header should be passed
 
-proc reshapeMatND*(arr: ptr TArr; sizeofHeader: cint; header: ptr TArr;
-                   newCn: cint; newDims: cint; newSizes: ptr cint): ptr TArr {.
+proc reshapeMatND*(arr: ImgPtr; sizeofHeader: cint; header: ImgPtr;
+                   newCn: cint; newDims: cint; newSizes: ptr cint): ImgPtr {.
     cdecl, importc: "cvReshapeMatND", dynlib: coredll.}
 # #define cvReshapeND( arr, header, new_cn, new_dims, new_sizes )   \
 #      cvReshapeMatND( (arr), sizeof(*(header)), (header),         \
 #                      (new_cn), (new_dims), (new_sizes))
 #
 
-proc reshape*(arr: ptr TArr; header: ptr TMat; newCn: cint; newRows: cint = 0): ptr TMat {.
+proc reshape*(arr: ImgPtr; header: MatPtr; newCn: cint; newRows: cint = 0): MatPtr {.
     cdecl, importc: "cvReshape", dynlib: coredll.}
 # Repeats source 2d array several times in both horizontal and
 #   vertical direction to fill destination array
 
-proc repeat*(src: ptr TArr; dst: ptr TArr) {.cdecl, importc: "cvRepeat",
+proc repeat*(src: ImgPtr; dst: ImgPtr) {.cdecl, importc: "cvRepeat",
     dynlib: coredll.}
 # Allocates array data
 
-proc createData*(arr: ptr TArr) {.cdecl, importc: "cvCreateData",
+proc createData*(arr: ImgPtr) {.cdecl, importc: "cvCreateData",
                                   dynlib: coredll.}
 # Releases array data
 
-proc releaseData*(arr: ptr TArr) {.cdecl, importc: "cvReleaseData",
+proc releaseData*(arr: ImgPtr) {.cdecl, importc: "cvReleaseData",
                                    dynlib: coredll.}
 # Attaches user data to the array header. The step is reffered to
 #   the pre-last dimension. That is, all the planes of the array
 #   must be joint (w/o gaps)
 
-proc setData*(arr: ptr TArr; data: pointer; step: cint) {.cdecl,
+proc setData*(arr: ImgPtr; data: pointer; step: cint) {.cdecl,
     importc: "cvSetData", dynlib: coredll.}
 # Retrieves raw data of CvMat, IplImage or CvMatND.
 #   In the latter case the function raises an error if
 #   the array can not be represented as a matrix
 
-proc getRawData*(arr: ptr TArr; data: ptr ptr cuchar; step: ptr cint = nil;
+proc getRawData*(arr: ImgPtr; data: ptr ptr cuchar; step: ptr cint = nil;
                  roiSize: ptr TSize = nil) {.cdecl, importc: "cvGetRawData",
     dynlib: coredll.}
 # Returns width and height of array in elements
 
-proc getSize*(arr: ptr TArr): TSize {.cdecl, importc: "cvGetSize",
+proc getSize*(arr: ImgPtr): TSize {.cdecl, importc: "cvGetSize",
                                       dynlib: coredll.}
 # Copies source array to destination array
 
-proc copy*(src: ptr TArr; dst: ptr TArr; mask: ptr TArr = nil) {.cdecl,
+proc copy*(src: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.cdecl,
     importc: "cvCopy", dynlib: coredll.}
 # Sets all or "masked" elements of input array
 #   to the same value
 
-proc set*(arr: ptr TArr; value: TScalar; mask: ptr TArr = nil) {.cdecl,
+proc set*(arr: ImgPtr; value: TScalar; mask: ImgPtr = nil) {.cdecl,
     importc: "cvSet", dynlib: coredll.}
 # Clears all the array elements (sets them to 0)
 
-proc setZero*(arr: ptr TArr) {.cdecl, importc: "cvSetZero", dynlib: coredll.}
+proc setZero*(arr: ImgPtr) {.cdecl, importc: "cvSetZero", dynlib: coredll.}
 const
   Zero* = setZero
 
 # Splits a multi-channel array into the set of single-channel arrays or
 #   extracts particular [color] plane
 
-proc split*(src: ptr TArr; dst0: ptr TArr; dst1: ptr TArr; dst2: ptr TArr;
-            dst3: ptr TArr) {.cdecl, importc: "cvSplit", dynlib: coredll.}
+proc split*(src: ImgPtr; dst0: ImgPtr; dst1: ImgPtr; dst2: ImgPtr;
+            dst3: ImgPtr) {.cdecl, importc: "cvSplit", dynlib: coredll.}
 # Merges a set of single-channel arrays into the single multi-channel array
 #   or inserts one particular [color] plane to the array
 
-proc merge*(src0: ptr TArr; src1: ptr TArr; src2: ptr TArr; src3: ptr TArr;
-            dst: ptr TArr) {.cdecl, importc: "cvMerge", dynlib: coredll.}
+proc merge*(src0: ImgPtr; src1: ImgPtr; src2: ImgPtr; src3: ImgPtr;
+            dst: ImgPtr) {.cdecl, importc: "cvMerge", dynlib: coredll.}
 # Copies several channels from input arrays to
 #   certain channels of output arrays
 
-proc mixChannels*(src: ptr ptr TArr; srcCount: cint; dst: ptr ptr TArr;
+proc mixChannels*(src: ptr ImgPtr; srcCount: cint; dst: ptr ImgPtr;
                   dstCount: cint; fromTo: ptr cint; pairCount: cint) {.cdecl,
     importc: "cvMixChannels", dynlib: coredll.}
 # Performs linear transformation on every source array element:
@@ -483,14 +483,14 @@ proc mixChannels*(src: ptr ptr TArr; srcCount: cint; dst: ptr ptr TArr;
 #   (number of channels must be the same), thus the function can be used
 #   for type conversion
 
-proc convertScale*(src: ptr TArr; dst: ptr TArr; scale: cdouble = 1;
+proc convertScale*(src: ImgPtr; dst: ImgPtr; scale: cdouble = 1;
                    shift: cdouble = 0) {.cdecl, importc: "cvConvertScale",
     dynlib: coredll.}
 const
   CvtScale* = convertScale
   Scale* = convertScale
 
-template convert*(src, dst: expr): expr =
+template convert*(src, dst: untyped): untyped =
   convertScale((src), (dst), 1, 0)
 
 # Performs linear transformation on every source array element,
@@ -499,7 +499,7 @@ template convert*(src, dst: expr): expr =
 #   destination array must have 8u type.
 #   In other cases one may use cvConvertScale + cvAbsDiffS
 
-proc convertScaleAbs*(src: ptr TArr; dst: ptr TArr; scale: cdouble = 1;
+proc convertScaleAbs*(src: ImgPtr; dst: ImgPtr; scale: cdouble = 1;
                       shift: cdouble = 0) {.cdecl, importc: "cvConvertScaleAbs",
     dynlib: coredll.}
 const
@@ -518,19 +518,19 @@ proc checkTermCriteria*(criteria: TTermCriteria; defaultEps: cdouble;
 #\***************************************************************************************
 # dst(mask) = src1(mask) + src2(mask)
 
-proc add*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; mask: ptr TArr = nil) {.
+proc add*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvAdd", dynlib: coredll.}
 # dst(mask) = src(mask) + value
 
-proc addS*(src: ptr TArr; value: TScalar; dst: ptr TArr; mask: ptr TArr = nil) {.
+proc addS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvAddS", dynlib: coredll.}
 # dst(mask) = src1(mask) - src2(mask)
 
-proc sub*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; mask: ptr TArr = nil) {.
+proc sub*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvSub", dynlib: coredll.}
 # dst(mask) = src(mask) - value = src(mask) + (-value)
 
-proc subS*(src: ptr TArr; value: TScalar; dst: ptr TArr; mask: ptr TArr = nil) {.
+proc subS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl.} =
   addS(src,
        scalar(- value.val[0], - value.val[1], - value.val[2], - value.val[3]),
@@ -538,70 +538,70 @@ proc subS*(src: ptr TArr; value: TScalar; dst: ptr TArr; mask: ptr TArr = nil) {
 
 # dst(mask) = value - src(mask)
 
-proc subRS*(src: ptr TArr; value: TScalar; dst: ptr TArr; mask: ptr TArr = nil) {.
+proc subRS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvSubRS", dynlib: coredll.}
 # dst(idx) = src1(idx) * src2(idx) * scale
 #   (scaled element-wise multiplication of 2 arrays)
 
-proc mul*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; scale: cdouble = 1) {.
+proc mul*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; scale: cdouble = 1) {.
     cdecl, importc: "cvMul", dynlib: coredll.}
 # element-wise division/inversion with scaling:
 #    dst(idx) = src1(idx) * scale / src2(idx)
 #    or dst(idx) = scale / src2(idx) if src1 == 0
 
-proc `Div`*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; scale: cdouble = 1) {.
+proc `Div`*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; scale: cdouble = 1) {.
     cdecl, importc: "cvDiv", dynlib: coredll.}
 # dst = src1 * scale + src2
 
-proc scaleAdd*(src1: ptr TArr; scale: TScalar; src2: ptr TArr; dst: ptr TArr) {.
+proc scaleAdd*(src1: ImgPtr; scale: TScalar; src2: ImgPtr; dst: ImgPtr) {.
     cdecl, importc: "cvScaleAdd", dynlib: coredll.}
-template axpy*(a, realScalar, b, c: expr): expr =
+template axpy*(a, realScalar, b, c: untyped): untyped =
   ScaleAdd(a, realScalar(realScalar), b, c)
 
 # dst = src1 * alpha + src2 * beta + gamma
 
-proc addWeighted*(src1: ptr TArr; alpha: cdouble; src2: ptr TArr; beta: cdouble;
-                  gamma: cdouble; dst: ptr TArr) {.cdecl,
+proc addWeighted*(src1: ImgPtr; alpha: cdouble; src2: ImgPtr; beta: cdouble;
+                  gamma: cdouble; dst: ImgPtr) {.cdecl,
     importc: "cvAddWeighted", dynlib: coredll.}
 # result = sum_i(src1(i) * src2(i)) (results for all channels are accumulated together)
 
-proc dotProduct*(src1: ptr TArr; src2: ptr TArr): cdouble {.cdecl,
+proc dotProduct*(src1: ImgPtr; src2: ImgPtr): cdouble {.cdecl,
     importc: "cvDotProduct", dynlib: coredll.}
 # dst(idx) = src1(idx) & src2(idx)
 
-proc bitwiseAnd*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; mask: ptr TArr = nil) {.
+proc bitwiseAnd*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvAnd", dynlib: coredll.}
 # dst(idx) = src(idx) & value
 
-proc andS*(src: ptr TArr; value: TScalar; dst: ptr TArr; mask: ptr TArr = nil) {.
+proc andS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvAndS", dynlib: coredll.}
 # dst(idx) = src1(idx) | src2(idx)
 
-proc bitwiseOr*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; mask: ptr TArr = nil) {.
+proc bitwiseOr*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvOr", dynlib: coredll.}
 # dst(idx) = src(idx) | value
 
-proc orS*(src: ptr TArr; value: TScalar; dst: ptr TArr; mask: ptr TArr = nil) {.
+proc orS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvOrS", dynlib: coredll.}
 # dst(idx) = src1(idx) ^ src2(idx)
 
-proc bitwiseXor*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; mask: ptr TArr = nil) {.
+proc bitwiseXor*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvXor", dynlib: coredll.}
 # dst(idx) = src(idx) ^ value
 
-proc xorS*(src: ptr TArr; value: TScalar; dst: ptr TArr; mask: ptr TArr = nil) {.
+proc xorS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvXorS", dynlib: coredll.}
 # dst(idx) = ~src(idx)
 
-proc bitwiseNot*(src: ptr TArr; dst: ptr TArr) {.cdecl, importc: "cvNot",
+proc bitwiseNot*(src: ImgPtr; dst: ImgPtr) {.cdecl, importc: "cvNot",
     dynlib: coredll.}
 # dst(idx) = lower(idx) <= src(idx) < upper(idx)
 
-proc inRange*(src: ptr TArr; lower: ptr TArr; upper: ptr TArr; dst: ptr TArr) {.
+proc inRange*(src: ImgPtr; lower: ImgPtr; upper: ImgPtr; dst: ImgPtr) {.
     cdecl, importc: "cvInRange", dynlib: coredll.}
 # dst(idx) = lower <= src(idx) < upper
 
-proc inRangeS*(src: ptr TArr; lower: TScalar; upper: TScalar; dst: ptr TArr) {.
+proc inRangeS*(src: ImgPtr; lower: TScalar; upper: TScalar; dst: ImgPtr) {.
     cdecl, importc: "cvInRangeS", dynlib: coredll.}
 const
   CMP_EQ* = 0
@@ -615,37 +615,37 @@ const
 #   Destination image should be 8uC1 or 8sC1
 # dst(idx) = src1(idx) _cmp_op_ src2(idx)
 
-proc cmp*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; cmpOp: cint) {.cdecl,
+proc cmp*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; cmpOp: cint) {.cdecl,
     importc: "cvCmp", dynlib: coredll.}
 # dst(idx) = src1(idx) _cmp_op_ value
 
-proc cmpS*(src: ptr TArr; value: cdouble; dst: ptr TArr; cmpOp: cint) {.cdecl,
+proc cmpS*(src: ImgPtr; value: cdouble; dst: ImgPtr; cmpOp: cint) {.cdecl,
     importc: "cvCmpS", dynlib: coredll.}
 # dst(idx) = min(src1(idx),src2(idx))
 
-proc min*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr) {.cdecl,
+proc min*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr) {.cdecl,
     importc: "cvMin", dynlib: coredll.}
 # dst(idx) = max(src1(idx),src2(idx))
 
-proc max*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr) {.cdecl,
+proc max*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr) {.cdecl,
     importc: "cvMax", dynlib: coredll.}
 # dst(idx) = min(src(idx),value)
 
-proc minS*(src: ptr TArr; value: cdouble; dst: ptr TArr) {.cdecl,
+proc minS*(src: ImgPtr; value: cdouble; dst: ImgPtr) {.cdecl,
     importc: "cvMinS", dynlib: coredll.}
 # dst(idx) = max(src(idx),value)
 
-proc maxS*(src: ptr TArr; value: cdouble; dst: ptr TArr) {.cdecl,
+proc maxS*(src: ImgPtr; value: cdouble; dst: ImgPtr) {.cdecl,
     importc: "cvMaxS", dynlib: coredll.}
 # dst(x,y,c) = abs(src1(x,y,c) - src2(x,y,c))
 
-proc absDiff*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr) {.cdecl,
+proc absDiff*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr) {.cdecl,
     importc: "cvAbsDiff", dynlib: coredll.}
 # dst(x,y,c) = abs(src(x,y,c) - value(c))
 
-proc absDiffS*(src: ptr TArr; dst: ptr TArr; value: TScalar) {.cdecl,
+proc absDiffS*(src: ImgPtr; dst: ImgPtr; value: TScalar) {.cdecl,
     importc: "cvAbsDiffS", dynlib: coredll.}
-template abs*(src, dst: expr): expr =
+template abs*(src, dst: untyped): untyped =
   AbsDiffS((src), (dst), ScalarAll(0))
 
 #***************************************************************************************\
@@ -654,32 +654,32 @@ template abs*(src, dst: expr): expr =
 # Does cartesian->polar coordinates conversion.
 #   Either of output components (magnitude or angle) is optional
 
-proc cartToPolar*(x: ptr TArr; y: ptr TArr; magnitude: ptr TArr;
-                  angle: ptr TArr = nil; angleInDegrees: cint = 0) {.cdecl,
+proc cartToPolar*(x: ImgPtr; y: ImgPtr; magnitude: ImgPtr;
+                  angle: ImgPtr = nil; angleInDegrees: cint = 0) {.cdecl,
     importc: "cvCartToPolar", dynlib: coredll.}
 # Does polar->cartesian coordinates conversion.
 #   Either of output components (magnitude or angle) is optional.
 #   If magnitude is missing it is assumed to be all 1's
 
-proc polarToCart*(magnitude: ptr TArr; angle: ptr TArr; x: ptr TArr;
-                  y: ptr TArr; angleInDegrees: cint = 0) {.cdecl,
+proc polarToCart*(magnitude: ImgPtr; angle: ImgPtr; x: ImgPtr;
+                  y: ImgPtr; angleInDegrees: cint = 0) {.cdecl,
     importc: "cvPolarToCart", dynlib: coredll.}
 # Does powering: dst(idx) = src(idx)^power
 
-proc pow*(src: ptr TArr; dst: ptr TArr; power: cdouble) {.cdecl,
+proc pow*(src: ImgPtr; dst: ImgPtr; power: cdouble) {.cdecl,
     importc: "cvPow", dynlib: coredll.}
 # Does exponention: dst(idx) = exp(src(idx)).
 #   Overflow is not handled yet. Underflow is handled.
 #   Maximal relative error is ~7e-6 for single-precision input
 
-proc exp*(src: ptr TArr; dst: ptr TArr) {.cdecl, importc: "cvExp",
+proc exp*(src: ImgPtr; dst: ImgPtr) {.cdecl, importc: "cvExp",
     dynlib: coredll.}
 # Calculates natural logarithms: dst(idx) = log(abs(src(idx))).
 #   Logarithm of 0 gives large negative number(~-700)
 #   Maximal relative error is ~3e-7 for single-precision output
 #
 
-proc log*(src: ptr TArr; dst: ptr TArr) {.cdecl, importc: "cvLog",
+proc log*(src: ImgPtr; dst: ImgPtr) {.cdecl, importc: "cvLog",
     dynlib: coredll.}
 # Fast arctangent calculation
 
@@ -697,7 +697,7 @@ const
   CHECK_RANGE* = 1
   CHECK_QUIET* = 2
 
-proc checkArr*(arr: ptr TArr; flags: cint = 0; minVal: cdouble = 0;
+proc checkArr*(arr: ImgPtr; flags: cint = 0; minVal: cdouble = 0;
                maxVal: cdouble = 0): cint {.cdecl, importc: "cvCheckArr",
     dynlib: coredll.}
 const
@@ -705,9 +705,9 @@ const
   RAND_UNI* = 0
   RAND_NORMAL* = 1
 
-discard """ proc randArr*(rng: ptr TRNG; arr: ptr TArr; dist_type: cint; param1: TScalar;
+discard """ proc randArr*(rng: ptr TRNG; arr: ImgPtr; dist_type: cint; param1: TScalar;
               param2: TScalar) {.cdecl, importc: "cvRandArr", dynlib: coredll.}
-proc randShuffle*(mat: ptr TArr; rng: ptr TRNG;
+proc randShuffle*(mat: ImgPtr; rng: ptr TRNG;
                   iter_factor: cdouble = 1.0000000000000000e+00) {.cdecl,
     importc: "cvRandShuffle", dynlib: coredll.} """
 const
@@ -716,15 +716,15 @@ const
   SORT_ASCENDING* = 0
   SORT_DESCENDING* = 16
 
-proc sort*(src: ptr TArr; dst: ptr TArr = nil; idxmat: ptr TArr = nil;
+proc sort*(src: ImgPtr; dst: ImgPtr = nil; idxmat: ImgPtr = nil;
            flags: cint = 0) {.cdecl, importc: "cvSort", dynlib: coredll.}
 # Finds real roots of a cubic equation
 
-proc solveCubic*(coeffs: ptr TMat; roots: ptr TMat): cint {.cdecl,
+proc solveCubic*(coeffs: MatPtr; roots: MatPtr): cint {.cdecl,
     importc: "cvSolveCubic", dynlib: coredll.}
 # Finds all real and complex roots of a polynomial equation
 
-proc solvePoly*(coeffs: ptr TMat; roots2: ptr TMat; maxiter: cint = 20;
+proc solvePoly*(coeffs: MatPtr; roots2: MatPtr; maxiter: cint = 20;
                 fig: cint = 100) {.cdecl, importc: "cvSolvePoly",
                                    dynlib: coredll.}
 #***************************************************************************************\
@@ -732,15 +732,15 @@ proc solvePoly*(coeffs: ptr TMat; roots2: ptr TMat; maxiter: cint = 20;
 #\***************************************************************************************
 # Calculates cross product of two 3d vectors
 
-proc crossProduct*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr) {.cdecl,
+proc crossProduct*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr) {.cdecl,
     importc: "cvCrossProduct", dynlib: coredll.}
 # Matrix transform: dst = A*B + C, C is optional
 
-template matMulAdd*(src1, src2, src3, dst: expr): expr =
+template matMulAdd*(src1, src2, src3, dst: untyped): untyped =
   GEMM((src1), (src2), 1.0000000000000000e+00, (src3), 1.0000000000000000e+00,
        (dst), 0)
 
-template matMul*(src1, src2, dst: expr): expr =
+template matMul*(src1, src2, dst: untyped): untyped =
   MatMulAdd((src1), (src2), nil, (dst))
 
 const
@@ -751,8 +751,8 @@ const
 # Extended matrix transform:
 #   dst = alpha*op(A)*op(B) + beta*op(C), where op(X) is X or X^T
 
-proc gEMM*(src1: ptr TArr; src2: ptr TArr; alpha: cdouble; src3: ptr TArr;
-           beta: cdouble; dst: ptr TArr; tABC: cint = 0) {.cdecl,
+proc gEMM*(src1: ImgPtr; src2: ImgPtr; alpha: cdouble; src3: ImgPtr;
+           beta: cdouble; dst: ImgPtr; tABC: cint = 0) {.cdecl,
     importc: "cvGEMM", dynlib: coredll.}
 const
   MatMulAddEx* = gEMM
@@ -760,36 +760,36 @@ const
 # Transforms each element of source array and stores
 #   resultant vectors in destination array
 
-proc transform*(src: ptr TArr; dst: ptr TArr; transmat: ptr TMat;
-                shiftvec: ptr TMat = nil) {.cdecl, importc: "cvTransform",
+proc transform*(src: ImgPtr; dst: ImgPtr; transmat: MatPtr;
+                shiftvec: MatPtr = nil) {.cdecl, importc: "cvTransform",
     dynlib: coredll.}
 const
   MatMulAddS* = transform
 
 # Does perspective transform on every element of input array
 
-proc perspectiveTransform*(src: ptr TArr; dst: ptr TArr; mat: ptr TMat) {.cdecl,
+proc perspectiveTransform*(src: ImgPtr; dst: ImgPtr; mat: MatPtr) {.cdecl,
     importc: "cvPerspectiveTransform", dynlib: coredll.}
 # Calculates (A-delta)*(A-delta)^T (order=0) or (A-delta)^T*(A-delta) (order=1)
 
-proc mulTransposed*(src: ptr TArr; dst: ptr TArr; order: cint;
-                    delta: ptr TArr = nil;
+proc mulTransposed*(src: ImgPtr; dst: ImgPtr; order: cint;
+                    delta: ImgPtr = nil;
                     scale: cdouble = 1.0000000000000000e+00) {.cdecl,
     importc: "cvMulTransposed", dynlib: coredll.}
 # Tranposes matrix. Square matrices can be transposed in-place
 
-proc transpose*(src: ptr TArr; dst: ptr TArr) {.cdecl, importc: "cvTranspose",
+proc transpose*(src: ImgPtr; dst: ImgPtr) {.cdecl, importc: "cvTranspose",
     dynlib: coredll.}
 
 # Completes the symmetric matrix from the lower (LtoR=0) or from the upper (LtoR!=0) part
 
-proc completeSymm*(matrix: ptr TMat; ltoR: cint = 0) {.cdecl,
+proc completeSymm*(matrix: MatPtr; ltoR: cint = 0) {.cdecl,
     importc: "cvCompleteSymm", dynlib: coredll.}
 # Mirror array data around horizontal (flip=0),
 #   vertical (flip=1) or both(flip=-1) axises:
 #   cvFlip(src) flips images vertically and sequences horizontally (inplace)
 
-proc flip*(src: ptr TArr; dst: ptr TArr = nil; flipMode: cint = 0) {.cdecl,
+proc flip*(src: ImgPtr; dst: ImgPtr = nil; flipMode: cint = 0) {.cdecl,
     importc: "cvFlip", dynlib: coredll.}
 const
   Mirror* = flip
@@ -799,12 +799,12 @@ const
 
 # Performs Singular Value Decomposition of a matrix
 
-proc sVD*(a: ptr TArr; w: ptr TArr; u: ptr TArr = nil; v: ptr TArr = nil;
+proc sVD*(a: ImgPtr; w: ImgPtr; u: ImgPtr = nil; v: ImgPtr = nil;
           flags: cint = 0) {.cdecl, importc: "cvSVD", dynlib: coredll.}
 # Performs Singular Value Back Substitution (solves A*X = B):
 #   flags must be the same as in cvSVD
 
-proc sVBkSb*(w: ptr TArr; u: ptr TArr; v: ptr TArr; b: ptr TArr; x: ptr TArr;
+proc sVBkSb*(w: ImgPtr; u: ImgPtr; v: ImgPtr; b: ImgPtr; x: ImgPtr;
              flags: cint) {.cdecl, importc: "cvSVBkSb", dynlib: coredll.}
 const
   LU* = 0
@@ -816,7 +816,7 @@ const
 
 # Inverts matrix
 
-proc invert*(src: ptr TArr; dst: ptr TArr; theMethod: cint = LU): cdouble {.cdecl,
+proc invert*(src: ImgPtr; dst: ImgPtr; theMethod: cint = LU): cdouble {.cdecl,
     importc: "cvInvert", dynlib: coredll.}
 const
   Inv* = invert
@@ -824,17 +824,17 @@ const
 # Solves linear system (src1)*(dst) = (src2)
 #   (returns 0 if src1 is a singular and CV_LU method is used)
 
-proc solve*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; theMethod: cint = LU): cint {.
+proc solve*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; theMethod: cint = LU): cint {.
     cdecl, importc: "cvSolve", dynlib: coredll.}
 # Calculates determinant of input matrix
 
-proc det*(mat: ptr TArr): cdouble {.cdecl, importc: "cvDet", dynlib: coredll.}
+proc det*(mat: ImgPtr): cdouble {.cdecl, importc: "cvDet", dynlib: coredll.}
 # Calculates trace of the matrix (sum of elements on the main diagonal)
 
-proc trace*(mat: ptr TArr): TScalar {.cdecl, importc: "cvTrace", dynlib: coredll.}
+proc trace*(mat: ImgPtr): TScalar {.cdecl, importc: "cvTrace", dynlib: coredll.}
 # Finds eigen values and vectors of a symmetric matrix
 
-proc eigenVV*(mat: ptr TArr; evects: ptr TArr; evals: ptr TArr;
+proc eigenVV*(mat: ImgPtr; evects: ImgPtr; evals: ImgPtr;
               eps: cdouble = 0; lowindex: cint = - 1; highindex: cint = - 1) {.
     cdecl, importc: "cvEigenVV", dynlib: coredll.}
 #/* Finds selected eigen values and vectors of a symmetric matrix */
@@ -842,11 +842,11 @@ proc eigenVV*(mat: ptr TArr; evects: ptr TArr; evals: ptr TArr;
 #                                int lowindex, int highindex );
 # Makes an identity matrix (mat_ij = i == j)
 
-proc setIdentity*(mat: ptr TArr; value: TScalar = realScalar(1)) {.cdecl,
+proc setIdentity*(mat: ImgPtr; value: TScalar = realScalar(1)) {.cdecl,
     importc: "cvSetIdentity", dynlib: coredll.}
 # Fills matrix with given range of numbers
 
-proc range*(mat: ptr TArr; start: cdouble; theEnd: cdouble): ptr TArr {.cdecl,
+proc range*(mat: ImgPtr; start: cdouble; theEnd: cdouble): ImgPtr {.cdecl,
     importc: "cvRange", dynlib: coredll.}
 # Calculates covariation matrix for a set of vectors
 # transpose([v1-avg, v2-avg,...]) * [v1-avg,v2-avg,...]
@@ -880,26 +880,26 @@ const
 const
   COVAR_COLS* = 16
 
-proc calcCovarMatrix*(vects: ptr ptr TArr; count: cint; covMat: ptr TArr;
-                      avg: ptr TArr; flags: cint) {.cdecl,
+proc calcCovarMatrix*(vects: ptr ImgPtr; count: cint; covMat: ImgPtr;
+                      avg: ImgPtr; flags: cint) {.cdecl,
     importc: "cvCalcCovarMatrix", dynlib: coredll.}
 const
   PCA_DATA_AS_ROW* = 0
   PCA_DATA_AS_COL* = 1
   PCA_USE_AVG* = 2
 
-proc calcPCA*(data: ptr TArr; mean: ptr TArr; eigenvals: ptr TArr;
-              eigenvects: ptr TArr; flags: cint) {.cdecl, importc: "cvCalcPCA",
+proc calcPCA*(data: ImgPtr; mean: ImgPtr; eigenvals: ImgPtr;
+              eigenvects: ImgPtr; flags: cint) {.cdecl, importc: "cvCalcPCA",
     dynlib: coredll.}
-proc projectPCA*(data: ptr TArr; mean: ptr TArr; eigenvects: ptr TArr;
-                 result: ptr TArr) {.cdecl, importc: "cvProjectPCA",
+proc projectPCA*(data: ImgPtr; mean: ImgPtr; eigenvects: ImgPtr;
+                 result: ImgPtr) {.cdecl, importc: "cvProjectPCA",
                                      dynlib: coredll.}
-proc backProjectPCA*(proj: ptr TArr; mean: ptr TArr; eigenvects: ptr TArr;
-                     result: ptr TArr) {.cdecl, importc: "cvBackProjectPCA",
+proc backProjectPCA*(proj: ImgPtr; mean: ImgPtr; eigenvects: ImgPtr;
+                     result: ImgPtr) {.cdecl, importc: "cvBackProjectPCA",
     dynlib: coredll.}
 # Calculates Mahalanobis(weighted) distance
 
-proc mahalanobis*(vec1: ptr TArr; vec2: ptr TArr; mat: ptr TArr): cdouble {.
+proc mahalanobis*(vec1: ImgPtr; vec2: ImgPtr; mat: ImgPtr): cdouble {.
     cdecl, importc: "cvMahalanobis", dynlib: coredll.}
 const
   mahalonobis* = mahalanobis
@@ -909,24 +909,24 @@ const
 #\***************************************************************************************
 # Finds sum of array elements
 
-proc sum*(arr: ptr TArr): TScalar {.cdecl, importc: "cvSum", dynlib: coredll.}
+proc sum*(arr: ImgPtr): TScalar {.cdecl, importc: "cvSum", dynlib: coredll.}
 # Calculates number of non-zero pixels
 
-proc countNonZero*(arr: ptr TArr): cint {.cdecl, importc: "cvCountNonZero",
+proc countNonZero*(arr: ImgPtr): cint {.cdecl, importc: "cvCountNonZero",
     dynlib: coredll.}
 # Calculates mean value of array elements
 
-proc avg*(arr: ptr TArr; mask: ptr TArr = nil): TScalar {.cdecl,
+proc avg*(arr: ImgPtr; mask: ImgPtr = nil): TScalar {.cdecl,
     importc: "cvAvg", dynlib: coredll.}
 # Calculates mean and standard deviation of pixel values
 
-proc avgSdv*(arr: ptr TArr; mean: ptr TScalar; stdDev: ptr TScalar;
-             mask: ptr TArr = nil) {.cdecl, importc: "cvAvgSdv", dynlib: coredll.}
+proc avgSdv*(arr: ImgPtr; mean: ptr TScalar; stdDev: ptr TScalar;
+             mask: ImgPtr = nil) {.cdecl, importc: "cvAvgSdv", dynlib: coredll.}
 # Finds global minimum, maximum and their positions
 
-proc minMaxLoc*(arr: ptr TArr; minVal: ptr cdouble; maxVal: ptr cdouble;
+proc minMaxLoc*(arr: ImgPtr; minVal: ptr cdouble; maxVal: ptr cdouble;
                 minLoc: ptr TPoint = nil; maxLoc: ptr TPoint = nil;
-                mask: ptr TArr = nil) {.cdecl, importc: "cvMinMaxLoc",
+                mask: ImgPtr = nil) {.cdecl, importc: "cvMinMaxLoc",
                                         dynlib: coredll.}
 # types of array norm
 
@@ -947,13 +947,13 @@ const
 
 # Finds norm, difference norm or relative difference norm for an array (or two arrays)
 
-proc norm*(arr1: ptr TArr; arr2: ptr TArr = nil; normType: cint = L2;
-           mask: ptr TArr = nil): cdouble {.cdecl, importc: "cvNorm",
+proc norm*(arr1: ImgPtr; arr2: ImgPtr = nil; normType: cint = L2;
+           mask: ImgPtr = nil): cdouble {.cdecl, importc: "cvNorm",
     dynlib: coredll.}
-proc normalize*(src: ptr TArr; dst: ptr TArr;
+proc normalize*(src: ImgPtr; dst: ImgPtr;
                 a: cdouble = 1.0000000000000000e+00;
                 b: cdouble = 0.0000000000000000e+00; normType: cint = L2;
-                mask: ptr TArr = nil) {.cdecl, importc: "cvNormalize",
+                mask: ImgPtr = nil) {.cdecl, importc: "cvNormalize",
                                         dynlib: coredll.}
 const
   REDUCE_SUM* = 0
@@ -961,7 +961,7 @@ const
   REDUCE_MAX* = 2
   REDUCE_MIN* = 3
 
-proc reduce*(src: ptr TArr; dst: ptr TArr; dim: cint = - 1;
+proc reduce*(src: ImgPtr; dst: ImgPtr; dim: cint = - 1;
              op: cint = REDUCE_SUM) {.cdecl, importc: "cvReduce",
                                       dynlib: coredll.}
 #***************************************************************************************\
@@ -982,14 +982,14 @@ const
 #    real->ccs (forward),
 #    ccs->real (inverse)
 
-proc dFT*(src: ptr TArr; dst: ptr TArr; flags: cint; nonzeroRows: cint = 0) {.
+proc dFT*(src: ImgPtr; dst: ImgPtr; flags: cint; nonzeroRows: cint = 0) {.
     cdecl, importc: "cvDFT", dynlib: coredll.}
 const
   fFT* = dFT
 
 # Multiply results of DFTs: DFT(X)*DFT(Y) or DFT(X)*conj(DFT(Y))
 
-proc mulSpectrums*(src1: ptr TArr; src2: ptr TArr; dst: ptr TArr; flags: cint) {.
+proc mulSpectrums*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; flags: cint) {.
     cdecl, importc: "cvMulSpectrums", dynlib: coredll.}
 # Finds optimal DFT vector size >= size0
 
@@ -997,7 +997,7 @@ proc getOptimalDFTSize*(size0: cint): cint {.cdecl,
     importc: "cvGetOptimalDFTSize", dynlib: coredll.}
 # Discrete Cosine Transform
 
-proc dCT*(src: ptr TArr; dst: ptr TArr; flags: cint) {.cdecl, importc: "cvDCT",
+proc dCT*(src: ImgPtr; dst: ImgPtr; flags: cint) {.cdecl, importc: "cvDCT",
     dynlib: coredll.}
 #***************************************************************************************\
 #                              Dynamic data structures                                   *
@@ -1171,7 +1171,7 @@ proc seqRemoveSlice*(seq: ptr TSeq; slice: core.TSlice) {.cdecl,
     importc: "cvSeqRemoveSlice", dynlib: coredll.}
 # Inserts a sequence or array into another sequence
 
-proc seqInsertSlice*(seq: ptr TSeq; beforeIndex: cint; fromArr: ptr TArr) {.
+proc seqInsertSlice*(seq: ptr TSeq; beforeIndex: cint; fromArr: ImgPtr) {.
     cdecl, importc: "cvSeqInsertSlice", dynlib: coredll.}
 # a < b ? -1 : a > b ? 1 : 0
 
@@ -1307,17 +1307,17 @@ proc graphVtxDegreeByPtr*(graph: ptr TGraph; vtx: ptr TGraphVtx): cint {.cdecl,
     importc: "cvGraphVtxDegreeByPtr", dynlib: coredll.}
 # Retrieves graph vertex by given index
 
-template getGraphVtx*(graph, idx: expr): expr =
+template getGraphVtx*(graph, idx: untyped): untyped =
   cast[ptr TGraphVtx](GetSetElem(cast[ptr TSet]((graph)), (idx)))
 
 # Retrieves index of a graph vertex given its pointer
 
 # Retrieves index of a graph edge given its pointer
 
-template graphGetVtxCount*(graph: expr): expr =
+template graphGetVtxCount*(graph: untyped): untyped =
   graph.active_count
 
-template graphGetEdgeCount*(graph: expr): expr =
+template graphGetEdgeCount*(graph: untyped): untyped =
   graph.edges.active_count
 
 const
@@ -1387,7 +1387,7 @@ proc cloneGraph*(graph: ptr TGraph; storage: ptr TMemStorage): ptr TGraph {.
 #       If a drawn figure is partially or completely outside of the image, it is clipped.*
 #\***************************************************************************************
 
-template rgb*(r, g, b: expr): expr =
+template rgb*(r, g, b: untyped): untyped =
   Scalar((b), (g), (r), 0)
 
 const
@@ -1396,35 +1396,35 @@ const
 
 # Draws 4-connected, 8-connected or antialiased line segment connecting two points
 
-proc line*(img: ptr TArr; pt1: TPoint; pt2: TPoint; color: TScalar;
+proc line*(img: ImgPtr; pt1: TPoint; pt2: TPoint; color: TScalar;
            thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.cdecl,
     importc: "cvLine", dynlib: coredll.}
 # Draws a rectangle given two opposite corners of the rectangle (pt1 & pt2),
 #   if thickness<0 (e.g. thickness == CV_FILLED), the filled box is drawn
 
-proc rectangle*(img: ptr TArr; pt1: TPoint; pt2: TPoint; color: TScalar;
+proc rectangle*(img: ImgPtr; pt1: TPoint; pt2: TPoint; color: TScalar;
                 thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
     cdecl, importc: "cvRectangle", dynlib: coredll.}
 # Draws a rectangle specified by a CvRect structure
 
-proc rectangleR*(img: ptr TArr; r: TRect; color: TScalar; thickness: cint = 1;
+proc rectangleR*(img: ImgPtr; r: TRect; color: TScalar; thickness: cint = 1;
                  lineType: cint = 8; shift: cint = 0) {.cdecl,
     importc: "cvRectangleR", dynlib: coredll.}
 # Draws a circle with specified center and radius.
 #   Thickness works in the same way as with cvRectangle
 
-proc circle*(img: ptr TArr; center: TPoint; radius: cint; color: TScalar;
+proc circle*(img: ImgPtr; center: TPoint; radius: cint; color: TScalar;
              thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.cdecl,
     importc: "cvCircle", dynlib: coredll.}
 # Draws ellipse outline, filled ellipse, elliptic arc or filled elliptic sector,
 #   depending on <thickness>, <start_angle> and <end_angle> parameters. The resultant figure
 #   is rotated by <angle>. All the angles are in degrees
 
-proc ellipse*(img: ptr TArr; center: TPoint; axes: TSize; angle: cdouble;
+proc ellipse*(img: ImgPtr; center: TPoint; axes: TSize; angle: cdouble;
               startAngle: cdouble; endAngle: cdouble; color: TScalar;
               thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
     cdecl, importc: "cvEllipse", dynlib: coredll.}
-proc ellipseBox*(img: ptr TArr; box: TBox2D; color: TScalar;
+proc ellipseBox*(img: ImgPtr; box: TBox2D; color: TScalar;
                  thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
     cdecl.} =
   var axes: TSize
@@ -1435,17 +1435,17 @@ proc ellipseBox*(img: ptr TArr; box: TBox2D; color: TScalar;
 
 # Fills convex or monotonous polygon.
 
-proc fillConvexPoly*(img: ptr TArr; pts: ptr TPoint; npts: cint; color: TScalar;
+proc fillConvexPoly*(img: ImgPtr; pts: ptr TPoint; npts: cint; color: TScalar;
                      lineType: cint = 8; shift: cint = 0) {.cdecl,
     importc: "cvFillConvexPoly", dynlib: coredll.}
 # Fills an area bounded by one or more arbitrary polygons
 
-proc fillPoly*(img: ptr TArr; pts: ptr ptr TPoint; npts: ptr cint;
+proc fillPoly*(img: ImgPtr; pts: ptr ptr TPoint; npts: ptr cint;
                contours: cint; color: TScalar; lineType: cint = 8;
                shift: cint = 0) {.cdecl, importc: "cvFillPoly", dynlib: coredll.}
 # Draws one or more polygonal curves
 
-proc polyLine*(img: ptr TArr; pts: ptr ptr TPoint; npts: ptr cint;
+proc polyLine*(img: ImgPtr; pts: ptr ptr TPoint; npts: ptr cint;
                contours: cint; isClosed: cint; color: TScalar;
                thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
     cdecl, importc: "cvPolyLine", dynlib: coredll.}
@@ -1466,7 +1466,7 @@ proc clipLine*(imgSize: TSize; pt1: ptr TPoint; pt2: ptr TPoint): cint {.cdecl,
 #   to pt1 (or pt2, see left_to_right description) location in the image.
 #   Returns the number of pixels on the line between the ending points.
 
-proc initLineIterator*(image: ptr TArr; pt1: TPoint; pt2: TPoint;
+proc initLineIterator*(image: ImgPtr; pt1: TPoint; pt2: TPoint;
                        lineIterator: ptr TLineIterator; connectivity: cint = 8;
                        leftToRight: cint = 0): cint {.cdecl,
     importc: "cvInitLineIterator", dynlib: coredll.}
@@ -1522,7 +1522,7 @@ proc font*(scale: cdouble; thickness: cint = 1): TFont {.cdecl.} =
 # Renders text stroke with specified font and color at specified location.
 #   CvFont should be initialized with cvInitFont
 
-proc putText*(img: ptr TArr; text: cstring; org: TPoint; font: ptr TFont;
+proc putText*(img: ImgPtr; text: cstring; org: TPoint; font: ptr TFont;
               color: TScalar) {.cdecl, importc: "cvPutText", dynlib: coredll.}
 # Calculates bounding box of text stroke (useful for alignment)
 
@@ -1547,14 +1547,14 @@ proc ellipse2Poly*(center: TPoint; axes: TSize; angle: cint; arcStart: cint;
     importc: "cvEllipse2Poly", dynlib: coredll.}
 # Draws contour outlines or filled interiors on the image
 
-proc drawContours*(img: ptr TArr; contour: ptr TSeq; externalColor: TScalar;
+proc drawContours*(img: ImgPtr; contour: ptr TSeq; externalColor: TScalar;
                    holeColor: TScalar; maxLevel: cint; thickness: cint = 1;
                    lineType: cint = 8; offset: TPoint = point(0, 0)) {.cdecl,
     importc: "cvDrawContours", dynlib: coredll.}
 # Does look-up transformation. Elements of the source array
 #   (that should be 8uC1 or 8sC1) are used as indexes in lutarr 256-element table
 
-proc lUT*(src: ptr TArr; dst: ptr TArr; lut: ptr TArr) {.cdecl,
+proc lUT*(src: ImgPtr; dst: ImgPtr; lut: ImgPtr) {.cdecl,
     importc: "cvLUT", dynlib: coredll.}
 #****************** Iteration through the sequence tree ****************
 
@@ -1593,9 +1593,9 @@ proc treeToNodeSeq*(first: pointer; headerSize: cint; storage: ptr TMemStorage):
 const
   KMEANS_USE_INITIAL_LABELS* = 1
 
-discard """ proc kMeans2*(samples: ptr TArr; cluster_count: cint; labels: ptr TArr;
+discard """ proc kMeans2*(samples: ImgPtr; cluster_count: cint; labels: ImgPtr;
               termcrit: TTermCriteria; attempts: cint = 1; rng: ptr RNG = 0;
-              flags: cint = 0; centers: ptr TArr = 0;
+              flags: cint = 0; centers: ImgPtr = 0;
               compactness: ptr cdouble = 0): cint {.cdecl, importc: "cvKMeans2",
     dynlib: coredll.} """
 #***************************************************************************************\
@@ -1645,7 +1645,7 @@ proc setIPLAllocators*(createHeader: TiplCreateImageHeader;
                        deallocate: TiplDeallocate; createRoi: TiplCreateROI;
                        cloneImage: TiplCloneImage) {.cdecl,
     importc: "cvSetIPLAllocators", dynlib: coredll.}
-template Turn_On_Ipl_Compatibility*(): expr =
+template Turn_On_Ipl_Compatibility*(): untyped =
   SetIPLAllocators(iplCreateImageHeader, iplAllocateImage, iplDeallocate,
                    iplCreateROI, iplCloneImage)
 

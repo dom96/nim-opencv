@@ -40,53 +40,53 @@
 #//M
 
 {.deadCodeElim: on.}
-when defined(windows): 
-  const 
-    highguidll* = "(lib|)opencv_highgui(249|231)d.dll"
-elif defined(macosx): 
-  const 
+when defined(windows):
+  const
+    highguidll* = "(lib|)opencv_highgui(249|231|)(d|).dll"
+elif defined(macosx):
+  const
     highguidll* = "libopencv_highgui.dylib"
-else: 
-  const 
+else:
+  const
     highguidll* = "libopencv_highgui.so"
 
 import core
 
 type
   TCapture*{.pure, final.} = object
-  
+
   TVideoWriter*{.pure, final.} = object
 
-#proc fontQt*(nameFont: cstring; pointSize: cint; color: TScalar; 
-#             weight: cint; style: cint; spacing: cint): TFont{.cdecl, 
+#proc fontQt*(nameFont: cstring; pointSize: cint; color: TScalar;
+#             weight: cint; style: cint; spacing: cint): TFont{.cdecl,
 #    importc: "cvFontQt", dynlib: highguidll.}
-#proc addText*(img: ptr TArr; text: cstring; org: TPoint; arg2: ptr TFont){.
+#proc addText*(img: ImgPtr; text: cstring; org: TPoint; arg2: ptr TFont){.
 #    cdecl, importc: "cvAddText", dynlib: highguidll.}
-proc displayOverlay*(name: cstring; text: cstring; delayms: cint){.cdecl, 
+proc displayOverlay*(name: cstring; text: cstring; delayms: cint){.cdecl,
     importc: "cvDisplayOverlay", dynlib: highguidll.}
-proc displayStatusBar*(name: cstring; text: cstring; delayms: cint){.cdecl, 
+proc displayStatusBar*(name: cstring; text: cstring; delayms: cint){.cdecl,
     importc: "cvDisplayStatusBar", dynlib: highguidll.}
-proc saveWindowParameters*(name: cstring){.cdecl, 
+proc saveWindowParameters*(name: cstring){.cdecl,
     importc: "cvSaveWindowParameters", dynlib: highguidll.}
-proc loadWindowParameters*(name: cstring){.cdecl, 
+proc loadWindowParameters*(name: cstring){.cdecl,
     importc: "cvLoadWindowParameters", dynlib: highguidll.}
 #int cvStartLoop(int (*pt2Func)(int argc, char *argv[]), int argc, char* argv[]);
 proc stopLoop*(){.cdecl, importc: "cvStopLoop", dynlib: highguidll.}
-type 
+type
   TButtonCallback* = proc (state: cint; userdata: pointer){.cdecl.}
-const 
+const
   PUSH_BUTTON* = 0
   CHECKBOX* = 1
   RADIOBOX* = 2
-proc createButton*(buttonName: cstring; onChange: TButtonCallback; 
-                   userdata: pointer; buttonType: cint; 
-                   initialButtonState: cint): cint{.cdecl, 
+proc createButton*(buttonName: cstring; onChange: TButtonCallback;
+                   userdata: pointer; buttonType: cint;
+                   initialButtonState: cint): cint{.cdecl,
     importc: "cvCreateButton", dynlib: highguidll.}
 #----------------------
-# this function is used to set some external parameters in case of X Window 
-proc initSystem*(argc: cint; argv: cstringArray): cint{.cdecl, 
+# this function is used to set some external parameters in case of X Window
+proc initSystem*(argc: cint; argv: cstringArray): cint{.cdecl,
     importc: "cvInitSystem", dynlib: highguidll.}
-proc startWindowThread*(): cint{.cdecl, importc: "cvStartWindowThread", 
+proc startWindowThread*(): cint{.cdecl, importc: "cvStartWindowThread",
                                  dynlib: highguidll.}
 # ---------  YV ---------
 const                       #These 3 flags are used by cvSet/GetWindowProperty
@@ -105,53 +105,53 @@ const                       #These 3 flags are used by cvSet/GetWindowProperty
   WINDOW_FULLSCREEN* = 1    #change the window to fullscreen
   WINDOW_FREERATIO* = 0x00000100 #the image expends as much as it can (no ratio constraint)
   WINDOW_KEEPRATIO* = 0x00000000 #the ration image is respected.
-# create window 
-proc namedWindow*(name: cstring; flags: cint): cint{.cdecl, 
+# create window
+proc namedWindow*(name: cstring; flags: cint): cint{.cdecl,
     importc: "cvNamedWindow", dynlib: highguidll.}
-# Set and Get Property of the window 
+# Set and Get Property of the window
 proc setWindowProperty*(name: cstring; propId: cint; propValue: cdouble){.
     cdecl, importc: "cvSetWindowProperty", dynlib: highguidll.}
-proc getWindowProperty*(name: cstring; propId: cint): cdouble{.cdecl, 
+proc getWindowProperty*(name: cstring; propId: cint): cdouble{.cdecl,
     importc: "cvGetWindowProperty", dynlib: highguidll.}
-# display image within window (highgui windows remember their content) 
-proc showImage*(name: cstring; image: ptr TArr){.cdecl, 
+# display image within window (highgui windows remember their content)
+proc showImage*(name: cstring; image: ImgPtr){.cdecl,
     importc: "cvShowImage", dynlib: highguidll.}
-# resize/move window 
-proc resizeWindow*(name: cstring; width: cint; height: cint){.cdecl, 
+# resize/move window
+proc resizeWindow*(name: cstring; width: cint; height: cint){.cdecl,
     importc: "cvResizeWindow", dynlib: highguidll.}
-proc moveWindow*(name: cstring; x: cint; y: cint){.cdecl, 
+proc moveWindow*(name: cstring; x: cint; y: cint){.cdecl,
     importc: "cvMoveWindow", dynlib: highguidll.}
-# destroy window and all the trackers associated with it 
-proc destroyWindow*(name: cstring){.cdecl, importc: "cvDestroyWindow", 
+# destroy window and all the trackers associated with it
+proc destroyWindow*(name: cstring){.cdecl, importc: "cvDestroyWindow",
                                     dynlib: highguidll.}
-proc destroyAllWindows*(){.cdecl, importc: "cvDestroyAllWindows", 
+proc destroyAllWindows*(){.cdecl, importc: "cvDestroyAllWindows",
                            dynlib: highguidll.}
-# get native window handle (HWND in case of Win32 and Widget in case of X Window) 
-proc getWindowHandle*(name: cstring): pointer{.cdecl, 
+# get native window handle (HWND in case of Win32 and Widget in case of X Window)
+proc getWindowHandle*(name: cstring): pointer{.cdecl,
     importc: "cvGetWindowHandle", dynlib: highguidll.}
-# get name of highgui window given its native handle 
-proc getWindowName*(windowHandle: pointer): cstring{.cdecl, 
+# get name of highgui window given its native handle
+proc getWindowName*(windowHandle: pointer): cstring{.cdecl,
     importc: "cvGetWindowName", dynlib: highguidll.}
 
-type 
+type
     TTrackbarCallback* = proc (pos: cint){.cdecl.}
-# create trackbar and display it on top of given window, set callback 
-proc createTrackbar*(trackbarName: cstring; windowName: cstring; 
-                     value: ptr cint; count: cint; 
-                     onChange: TTrackbarCallback): cint{.cdecl, 
+# create trackbar and display it on top of given window, set callback
+proc createTrackbar*(trackbarName: cstring; windowName: cstring;
+                     value: ptr cint; count: cint;
+                     onChange: TTrackbarCallback): cint{.cdecl,
     importc: "cvCreateTrackbar", dynlib: highguidll.}
-type 
+type
   TTrackbarCallback2* = proc (pos: cint; userdata: pointer){.cdecl.}
-proc createTrackbar2*(trackbarName: cstring; windowName: cstring; 
-                      value: ptr cint; count: cint; 
+proc createTrackbar2*(trackbarName: cstring; windowName: cstring;
+                      value: ptr cint; count: cint;
                       onChange: TTrackbarCallback2; userdata: pointer): cint{.
     cdecl, importc: "cvCreateTrackbar2", dynlib: highguidll.}
-# retrieve or set trackbar position 
+# retrieve or set trackbar position
 proc getTrackbarPos*(trackbarName: cstring; windowName: cstring): cint{.
     cdecl, importc: "cvGetTrackbarPos", dynlib: highguidll.}
 proc setTrackbarPos*(trackbarName: cstring; windowName: cstring; pos: cint){.
     cdecl, importc: "cvSetTrackbarPos", dynlib: highguidll.}
-const 
+const
   EVENT_MOUSEMOVE* = 0
   EVENT_LBUTTONDOWN* = 1
   EVENT_RBUTTONDOWN* = 2
@@ -162,26 +162,26 @@ const
   EVENT_LBUTTONDBLCLK* = 7
   EVENT_RBUTTONDBLCLK* = 8
   EVENT_MBUTTONDBLCLK* = 9
-const 
+const
   EVENT_FLAG_LBUTTON* = 1
   EVENT_FLAG_RBUTTON* = 2
   EVENT_FLAG_MBUTTON* = 4
   EVENT_FLAG_CTRLKEY* = 8
   EVENT_FLAG_SHIFTKEY* = 16
   EVENT_FLAG_ALTKEY* = 32
-type 
-  TCvMouseCallback* = proc (event: cint; x: cint; y: cint; flags: cint; 
+type
+  TCvMouseCallback* = proc (event: cint; x: cint; y: cint; flags: cint;
                             param: pointer){.cdecl.}
-# assign callback for mouse events 
-proc setMouseCallback*(windowName: cstring; onMouse: TCvMouseCallback; 
-                       param: pointer){.cdecl, importc: "cvSetMouseCallback", 
+# assign callback for mouse events
+proc setMouseCallback*(windowName: cstring; onMouse: TCvMouseCallback;
+                       param: pointer){.cdecl, importc: "cvSetMouseCallback",
     dynlib: highguidll.}
-const                       # 8bit, color or not 
+const                       # 8bit, color or not
                             #CV_LOAD_IMAGE_UNCHANGED  =-1,
-                            # 8bit, gray 
-  LOAD_IMAGE_GRAYSCALE* = 0 # ?, color 
-  LOAD_IMAGE_COLOR* = 1     # any depth, ? 
-  LOAD_IMAGE_ANYDEPTH* = 2  # ?, any color 
+                            # 8bit, gray
+  LOAD_IMAGE_GRAYSCALE* = 0 # ?, color
+  LOAD_IMAGE_COLOR* = 1     # any depth, ?
+  LOAD_IMAGE_ANYDEPTH* = 2  # ?, any color
   LOAD_IMAGE_ANYCOLOR* = 4
 # load image from file
 #  iscolor can be a combination of above flags where CV_LOAD_IMAGE_UNCHANGED
@@ -189,11 +189,11 @@ const                       # 8bit, color or not
 #  using CV_LOAD_IMAGE_ANYCOLOR alone is equivalent to CV_LOAD_IMAGE_UNCHANGED
 #  unless CV_LOAD_IMAGE_ANYDEPTH is specified images are converted to 8bit
 #
-proc loadImage*(filename: cstring; iscolor: cint): ptr TIplImage{.cdecl, 
+proc loadImage*(filename: cstring; iscolor: cint): ptr TIplImage{.cdecl,
     importc: "cvLoadImage", dynlib: highguidll.}
-#proc loadImageM*(filename: cstring; iscolor: cint): ptr TMat{.cdecl, 
+#proc loadImageM*(filename: cstring; iscolor: cint): MatPtr{.cdecl,
 #    importc: "cvLoadImageM", dynlib: highguidll.}
-const 
+const
   IMWRITE_JPEG_QUALITY* = 1
   IMWRITE_PNG_COMPRESSION* = 16
   IMWRITE_PNG_STRATEGY* = 17
@@ -204,45 +204,45 @@ const
   IMWRITE_PNG_STRATEGY_RLE* = 3
   IMWRITE_PNG_STRATEGY_FIXED* = 4
   IMWRITE_PXM_BINARY* = 32
-# save image to file 
-proc saveImage*(filename: cstring; image: ptr TArr; params: ptr cint): cint{.
+# save image to file
+proc saveImage*(filename: cstring; image: ImgPtr; params: ptr cint): cint{.
     cdecl, importc: "cvSaveImage", dynlib: highguidll.}
-# decode image stored in the buffer 
-#proc decodeImage*(buf: ptr TMat; iscolor: cint): ptr IplImage{.cdecl, 
+# decode image stored in the buffer
+#proc decodeImage*(buf: MatPtr; iscolor: cint): ptr IplImage{.cdecl,
 #    importc: "cvDecodeImage", dynlib: highguidll.}
-#proc decodeImageM*(buf: ptr TMat; iscolor: cint): ptr TMat{.cdecl, 
+#proc decodeImageM*(buf: MatPtr; iscolor: cint): MatPtr{.cdecl,
 #    importc: "cvDecodeImageM", dynlib: highguidll.}
-# encode image and store the result as a byte vector (single-row 8uC1 matrix) 
-#proc encodeImage*(ext: cstring; image: ptr TArr; params: ptr cint): ptr TMat{.
+# encode image and store the result as a byte vector (single-row 8uC1 matrix)
+#proc encodeImage*(ext: cstring; image: ImgPtr; params: ptr cint): MatPtr{.
 #    cdecl, importc: "cvEncodeImage", dynlib: highguidll.}
-const 
+const
   CVTIMG_FLIP* = 1
   CVTIMG_SWAP_RB* = 2
-# utility function: convert one image to another with optional vertical flip 
-proc convertImage*(src: ptr TArr; dst: ptr TArr; flags: cint){.cdecl, 
+# utility function: convert one image to another with optional vertical flip
+proc convertImage*(src: ImgPtr; dst: ImgPtr; flags: cint){.cdecl,
     importc: "cvConvertImage", dynlib: highguidll.}
-# wait for key event infinitely (delay<=0) or for "delay" milliseconds 
-proc waitKey*(delay: cint): cint{.cdecl, importc: "cvWaitKey", 
+# wait for key event infinitely (delay<=0) or for "delay" milliseconds
+proc waitKey*(delay: cint): cint{.cdecl, importc: "cvWaitKey",
                                   dynlib: highguidll.}
 # OpenGL support
-type 
+type
   TCvOpenGlDrawCallback* = proc (userdata: pointer){.cdecl.}
-proc setOpenGlDrawCallback*(windowName: cstring; 
+proc setOpenGlDrawCallback*(windowName: cstring;
                             callback: TCvOpenGlDrawCallback; userdata: pointer){.
     cdecl, importc: "cvSetOpenGlDrawCallback", dynlib: highguidll.}
-proc setOpenGlContext*(windowName: cstring){.cdecl, 
+proc setOpenGlContext*(windowName: cstring){.cdecl,
     importc: "cvSetOpenGlContext", dynlib: highguidll.}
-proc updateWindow*(windowName: cstring){.cdecl, importc: "cvUpdateWindow", 
+proc updateWindow*(windowName: cstring){.cdecl, importc: "cvUpdateWindow",
     dynlib: highguidll.}
 
 #***************************************************************************************
-#                         Working with Video Files and Cameras                           
+#                         Working with Video Files and Cameras
 #***************************************************************************************
 
-# start capturing frames from video file 
+# start capturing frames from video file
 proc createFileCapture*(filename: cstring): ptr TCapture{.
     importc: "cvCreateFileCapture", dynlib: highguidll.}
-const 
+const
   CAP_ANY* = 0           # autodetect
   CAP_MIL* = 100         # MIL proprietary drivers
   CAP_VFW* = 200         # platform native
@@ -381,7 +381,7 @@ const # modes of the controlling registers (can be: auto, manual, auto single pu
   CAP_PROP_IOS_DEVICE_FLASH* = 9003
   CAP_PROP_IOS_DEVICE_WHITEBALANCE* = 9004
   CAP_PROP_IOS_DEVICE_TORCH* = 9005 # Properties of cameras available through Smartek Giganetix Ethernet Vision interface
-                                    # --- Vladimir Litvinenko (litvinenko.vladimir@gmail.com) --- 
+                                    # --- Vladimir Litvinenko (litvinenko.vladimir@gmail.com) ---
   CAP_PROP_GIGA_FRAME_OFFSET_X* = 10001
   CAP_PROP_GIGA_FRAME_OFFSET_Y* = 10002
   CAP_PROP_GIGA_FRAME_WIDTH_MAX* = 10003
@@ -389,31 +389,31 @@ const # modes of the controlling registers (can be: auto, manual, auto single pu
   CAP_PROP_GIGA_FRAME_SENS_WIDTH* = 10005
   CAP_PROP_GIGA_FRAME_SENS_HEIGH* = 10006
 
-# start capturing frames from camera: index = camera_index + domain_offset (CV_CAP_*) 
+# start capturing frames from camera: index = camera_index + domain_offset (CV_CAP_*)
 proc createCameraCapture*(index: cint): ptr TCapture{.
     importc: "cvCreateCameraCapture", dynlib: highguidll.}
 # grab a frame, return 1 on success, 0 on fail.
-#  this function is thought to be fast               
-proc grabFrame*(capture: ptr TCapture): cint{.importc: "cvGrabFrame", 
+#  this function is thought to be fast
+proc grabFrame*(capture: ptr TCapture): cint{.importc: "cvGrabFrame",
     dynlib: highguidll.}
 # get the frame grabbed with cvGrabFrame(..)
 #  This function may apply some frame processing like
 #  frame decompression, flipping etc.
-#  !!!DO NOT RELEASE or MODIFY the retrieved frame!!! 
+#  !!!DO NOT RELEASE or MODIFY the retrieved frame!!!
 proc retrieveFrame*(capture: ptr TCapture; streamIdx: cint): ptr TIplImage{.
     importc: "cvRetrieveFrame", dynlib: highguidll.}
 # Just a combination of cvGrabFrame and cvRetrieveFrame
-#   !!!DO NOT RELEASE or MODIFY the retrieved frame!!!      
+#   !!!DO NOT RELEASE or MODIFY the retrieved frame!!!
 proc queryFrame*(capture: ptr TCapture): ptr TIplImage{.
     importc: "cvQueryFrame", dynlib: highguidll.}
-# stop capturing/reading and free resources 
+# stop capturing/reading and free resources
 proc releaseCapture*(capture: ptr ptr TCapture){.
     importc: "cvReleaseCapture", dynlib: highguidll.}
 
-# retrieve or set capture properties 
+# retrieve or set capture properties
 proc getCaptureProperty*(capture: ptr TCapture; propertyId: cint): cdouble{.
     importc: "cvGetCaptureProperty", dynlib: highguidll.}
-proc setCaptureProperty*(capture: ptr TCapture; propertyId: cint; 
+proc setCaptureProperty*(capture: ptr TCapture; propertyId: cint;
                            value: cdouble): cint{.
     importc: "cvSetCaptureProperty", dynlib: highguidll.}
 # Return the type of the capturer (eg, CV_CAP_V4W, CV_CAP_UNICAP), which is unknown if created with CV_CAP_ANY
@@ -425,26 +425,26 @@ proc fOURCC*(c1, c2, c3, c4: char): cint =
          ((ord(c3).cint and 255) shl 16) + ((ord(c4).cint and 255) shl 24))
 
 
-const 
+const
   FOURCC_PROMPT* = -1  # Open Codec Selection Dialog (Windows only)
   FOURCC_DEFAULT* = fOURCC('I', 'Y', 'U', 'V') # Use default codec for specified filename (Linux only)
 
-# initialize video file writer 
-proc createVideoWriter*(filename: cstring; fourcc: cint; fps: cdouble; 
+# initialize video file writer
+proc createVideoWriter*(filename: cstring; fourcc: cint; fps: cdouble;
                           frameSize: TSize; isColor: cint = 1): ptr TVideoWriter{.
     importc: "cvCreateVideoWriter", dynlib: highguidll.}
 
-# write frame to video file 
+# write frame to video file
 proc writeFrame*(writer: ptr TVideoWriter; image: ptr TIplImage): cint{.
     importc: "cvWriteFrame", dynlib: highguidll.}
-# close video file writer 
+# close video file writer
 proc releaseVideoWriter*(writer: ptr ptr TVideoWriter){.
     importc: "cvReleaseVideoWriter", dynlib: highguidll.}
 #***************************************************************************************\
 #                              Obsolete functions/synonyms                               *
-#\*************************************************************************************** 
-template captureFromFile*: expr = createFileCapture
-template captureFromCAM*(x: int): expr = createCameraCapture(x)
-template captureFromAVI*: expr = captureFromFile
-template createAVIWriter*: expr = createVideoWriter
-template writeToAVI*: expr = writeFrame
+#\***************************************************************************************
+template captureFromFile*: untyped = createFileCapture
+template captureFromCAM*(x: int): untyped = createCameraCapture(x)
+template captureFromAVI*: untyped = captureFromFile
+template createAVIWriter*: untyped = createVideoWriter
+template writeToAVI*: untyped = writeFrame
