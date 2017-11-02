@@ -42,40 +42,40 @@
 
 {.deadCodeElim: on.}
 import opencv/core
-# Connected component structure 
+# Connected component structure
 
-type 
-  TConnectedComp* {.pure, final.} = object 
-    area*: cdouble            # area of the connected component  
-    value*: TScalar            # average color of the connected component 
-    rect*: TRect               # ROI of the component  
+type
+  TConnectedComp* {.pure, final.} = object
+    area*: cdouble            # area of the connected component
+    value*: TScalar            # average color of the connected component
+    rect*: TRect               # ROI of the component
     contour*: pointer         # optional component boundary
                               #                      (the contour might have child contours corresponding to the holes)
   TContourScanner* {.pure, final.} = object
 
-# Image smooth methods 
+# Image smooth methods
 
-const 
+const
   BLUR_NO_SCALE* = 0
   BLUR* = 1
   GAUSSIAN* = 2
   MEDIAN* = 3
   BILATERAL* = 4
 
-# Filters used in pyramid decomposition 
+# Filters used in pyramid decomposition
 
-const 
+const
   GAUSSIAN_5x5* = 7
 
-# Special filters 
+# Special filters
 
-const 
+const
   SCHARR* = - 1
   MAX_SOBEL_KSIZE* = 7
 
-# Constants for color conversion 
+# Constants for color conversion
 
-const 
+const
   BGR2BGRA* = 0
   RGB2RGBA* = BGR2BGRA
   BGRA2BGR* = 1
@@ -269,32 +269,32 @@ const
   BGRA2YUV_YV12* = 134
   COLORCVT_MAX* = 135
 
-# Sub-pixel interpolation methods 
+# Sub-pixel interpolation methods
 
-const 
+const
   INTER_NN* = 0
   INTER_LINEAR* = 1
   INTER_CUBIC* = 2
   INTER_AREA* = 3
   INTER_LANCZOS4* = 4
 
-# ... and other image warping flags 
+# ... and other image warping flags
 
-const 
+const
   WARP_FILL_OUTLIERS* = 8
   WARP_INVERSE_MAP* = 16
 
-# Shapes of a structuring element for morphological operations 
+# Shapes of a structuring element for morphological operations
 
-const 
+const
   SHAPE_RECT* = 0
   SHAPE_CROSS* = 1
   SHAPE_ELLIPSE* = 2
   SHAPE_CUSTOM* = 100
 
-# Morphological operations 
+# Morphological operations
 
-const 
+const
   MOP_ERODE* = 0
   MOP_DILATE* = 1
   MOP_OPEN* = 2
@@ -303,10 +303,10 @@ const
   MOP_TOPHAT* = 5
   MOP_BLACKHAT* = 6
 
-# Spatial and central moments 
+# Spatial and central moments
 
-type 
-  TMoments* {.pure, final.} = object 
+type
+  TMoments* {.pure, final.} = object
     m00*: cdouble
     m10*: cdouble
     m01*: cdouble
@@ -316,33 +316,33 @@ type
     m30*: cdouble
     m21*: cdouble
     m12*: cdouble
-    m03*: cdouble             # spatial moments 
+    m03*: cdouble             # spatial moments
     mu20*: cdouble
     mu11*: cdouble
     mu02*: cdouble
     mu30*: cdouble
     mu21*: cdouble
     mu12*: cdouble
-    mu03*: cdouble            # central moments 
-    inv_sqrt_m00*: cdouble    # m00 != 0 ? 1/sqrt(m00) : 0 
-  
+    mu03*: cdouble            # central moments
+    inv_sqrt_m00*: cdouble    # m00 != 0 ? 1/sqrt(m00) : 0
 
-# Hu invariants 
 
-type 
-  THuMoments* {.pure, final.} = object 
+# Hu invariants
+
+type
+  THuMoments* {.pure, final.} = object
     hu1*: cdouble
     hu2*: cdouble
     hu3*: cdouble
     hu4*: cdouble
     hu5*: cdouble
     hu6*: cdouble
-    hu7*: cdouble             # Hu invariants 
-  
+    hu7*: cdouble             # Hu invariants
 
-# Template matching methods 
 
-const 
+# Template matching methods
+
+const
   TM_SQDIFF* = 0
   TM_SQDIFF_NORMED* = 1
   TM_CCORR* = 2
@@ -350,22 +350,22 @@ const
   TM_CCOEFF* = 4
   TM_CCOEFF_NORMED* = 5
 
-type 
+type
   TDistanceFunction* = proc (a: ptr cfloat; b: ptr cfloat; user_param: pointer): cfloat {.
       cdecl, cdecl.}
 
-# Contour retrieval modes 
+# Contour retrieval modes
 
-const 
+const
   RETR_EXTERNAL* = 0
   RETR_LIST* = 1
   RETR_CCOMP* = 2
   RETR_TREE* = 3
   RETR_FLOODFILL* = 4
 
-# Contour approximation methods 
+# Contour approximation methods
 
-const 
+const
   CHAIN_CODE* = 0
   CHAIN_APPROX_NONE* = 1
   CHAIN_APPROX_SIMPLE* = 2
@@ -378,168 +378,168 @@ const
 #It supports both hierarchical and plane variants of Suzuki algorithm.
 #
 
-type 
+type
   PContourScanner* = pointer
 
-# Freeman chain reader state 
+# Freeman chain reader state
 
-type 
-  TChainPtReader* {.pure, final.} = object 
+type
+  TChainPtReader* {.pure, final.} = object
     code*: char               #CV_SEQ_READER_FIELDS()
     pt*: TPoint
     deltas*: array[0..2 - 1, array[0..8 - 1, Schar]]
 
 
-# initializes 8-element array for fast access to 3x3 neighborhood of a pixel 
+# initializes 8-element array for fast access to 3x3 neighborhood of a pixel
 
 #***************************************************************************************\
 #                              Planar subdivisions                                       *
 #\***************************************************************************************
 
-type 
+type
   TSubdiv2DEdge* = csize
 
-const 
+const
   SUBDIV2D_VIRTUAL_POINT_FLAG* = (1 shl 30)
 
-type 
-  TQuadEdge2D* {.pure, final.} = object 
+type
+  TQuadEdge2D* {.pure, final.} = object
     flags*: cint
     pt*: array[0..4 - 1, ptr TSubdiv2DPoint]
     next*: array[0..4 - 1, TSubdiv2DEdge]
 
-  TSubdiv2DPoint* {.pure, final.} = object 
+  TSubdiv2DPoint* {.pure, final.} = object
     flags*: cint
     first*: TSubdiv2DEdge
     pt*: TPoint2D32f
     id*: cint
 
-  TSubdiv2D* {.pure, final.} = object 
+  TSubdiv2D* {.pure, final.} = object
     quad_edges*: cint         #CV_GRAPH_FIELDS()
     is_geometry_valid*: cint
     recent_edge*: TSubdiv2DEdge
     topleft*: TPoint2D32f
     bottomright*: TPoint2D32f
 
-  TSubdiv2DPointLocation* {.size: sizeof(cint).} = enum 
-    PTLOC_ERROR = - 2, PTLOC_OUTSIDE_RECT = - 1, PTLOC_INSIDE = 0, 
+  TSubdiv2DPointLocation* {.size: sizeof(cint).} = enum
+    PTLOC_ERROR = - 2, PTLOC_OUTSIDE_RECT = - 1, PTLOC_INSIDE = 0,
     PTLOC_VERTEX = 1, PTLOC_ON_EDGE = 2
-discard """ TNextEdgeType* {.size: sizeof(cint).} = enum 
-  NEXT_AROUND_ORG = 0x00000000, NEXT_AROUND_DST = 0x00000022, 
-  PREV_AROUND_ORG = 0x00000011, PREV_AROUND_DST = 0x00000033, 
-  NEXT_AROUND_LEFT = 0x00000013, NEXT_AROUND_RIGHT = 0x00000031, 
+discard """ TNextEdgeType* {.size: sizeof(cint).} = enum
+  NEXT_AROUND_ORG = 0x00000000, NEXT_AROUND_DST = 0x00000022,
+  PREV_AROUND_ORG = 0x00000011, PREV_AROUND_DST = 0x00000033,
+  NEXT_AROUND_LEFT = 0x00000013, NEXT_AROUND_RIGHT = 0x00000031,
   PREV_AROUND_LEFT = 0x00000020, PREV_AROUND_RIGHT = 0x00000002 """
 
-# get the next edge with the same origin point (counterwise) 
+# get the next edge with the same origin point (counterwise)
 
-discard """ template SUBDIV2D_NEXT_EDGE*(edge: expr): expr = 
+discard """ template SUBDIV2D_NEXT_EDGE*(edge: untyped): untyped =
   cast[(cast[ptr TQuadEdge2D](((edge) and not 3)))](.next[(edge) and 3]) """
 
-# Contour approximation algorithms 
+# Contour approximation algorithms
 
-const 
+const
   POLY_APPROX_DP* = 0
 
-# Shape matching methods 
+# Shape matching methods
 
-const 
+const
   CONTOURS_MATCH_I1* = 1
   CONTOURS_MATCH_I2* = 2
   CONTOURS_MATCH_I3* = 3
 
-# Shape orientation 
+# Shape orientation
 
-const 
+const
   CLOCKWISE* = 1
   COUNTER_CLOCKWISE* = 2
 
-# Convexity defect 
+# Convexity defect
 
-type 
-  TConvexityDefect* {.pure, final.} = object 
-    start*: ptr TPoint         # point of the contour where the defect begins 
-    theEnd*: ptr TPoint        # point of the contour where the defect ends 
-    depth_point*: ptr TPoint   # the farthest from the convex hull point within the defect 
-    depth*: cfloat            # distance between the farthest point and the convex hull 
-  
+type
+  TConvexityDefect* {.pure, final.} = object
+    start*: ptr TPoint         # point of the contour where the defect begins
+    theEnd*: ptr TPoint        # point of the contour where the defect ends
+    depth_point*: ptr TPoint   # the farthest from the convex hull point within the defect
+    depth*: cfloat            # distance between the farthest point and the convex hull
 
-# Histogram comparison methods 
 
-const 
+# Histogram comparison methods
+
+const
   COMP_CORREL* = 0
   COMP_CHISQR* = 1
   COMP_INTERSECT* = 2
   COMP_BHATTACHARYYA* = 3
   COMP_HELLINGER* = COMP_BHATTACHARYYA
 
-# Mask size for distance transform 
+# Mask size for distance transform
 
-const 
+const
   DIST_MASK_3* = 3
   DIST_MASK_5* = 5
   DIST_MASK_PRECISE* = 0
 
-# Content of output label array: connected components or pixels 
+# Content of output label array: connected components or pixels
 
-const 
+const
   DIST_LABEL_CCOMP* = 0
   DIST_LABEL_PIXEL* = 1
 
-# Distance types for Distance Transform and M-estimators 
+# Distance types for Distance Transform and M-estimators
 
-const 
-  DIST_USER* = - 1            # User defined distance 
-  DIST_L1* = 1                # distance = |x1-x2| + |y1-y2| 
-  DIST_L2* = 2                # the simple euclidean distance 
-  DIST_C* = 3                 # distance = max(|x1-x2|,|y1-y2|) 
-  DIST_L12* = 4               # L1-L2 metric: distance = 2(sqrt(1+x*x/2) - 1)) 
-  DIST_FAIR* = 5              # distance = c^2(|x|/c-log(1+|x|/c)), c = 1.3998 
-  DIST_WELSCH* = 6            # distance = c^2/2(1-exp(-(x/c)^2)), c = 2.9846 
-  DIST_HUBER* = 7             # distance = |x|<c ? x^2/2 : c(|x|-c/2), c=1.345 
+const
+  DIST_USER* = - 1            # User defined distance
+  DIST_L1* = 1                # distance = |x1-x2| + |y1-y2|
+  DIST_L2* = 2                # the simple euclidean distance
+  DIST_C* = 3                 # distance = max(|x1-x2|,|y1-y2|)
+  DIST_L12* = 4               # L1-L2 metric: distance = 2(sqrt(1+x*x/2) - 1))
+  DIST_FAIR* = 5              # distance = c^2(|x|/c-log(1+|x|/c)), c = 1.3998
+  DIST_WELSCH* = 6            # distance = c^2/2(1-exp(-(x/c)^2)), c = 2.9846
+  DIST_HUBER* = 7             # distance = |x|<c ? x^2/2 : c(|x|-c/2), c=1.345
 
-# Threshold types 
+# Threshold types
 
-const 
-  THRESH_BINARY* = 0          # value = value > threshold ? max_value : 0       
-  THRESH_BINARY_INV* = 1      # value = value > threshold ? 0 : max_value       
-  THRESH_TRUNC* = 2           # value = value > threshold ? threshold : value   
-  THRESH_TOZERO* = 3          # value = value > threshold ? value : 0           
-  THRESH_TOZERO_INV* = 4      # value = value > threshold ? 0 : value           
+const
+  THRESH_BINARY* = 0          # value = value > threshold ? max_value : 0
+  THRESH_BINARY_INV* = 1      # value = value > threshold ? 0 : max_value
+  THRESH_TRUNC* = 2           # value = value > threshold ? threshold : value
+  THRESH_TOZERO* = 3          # value = value > threshold ? value : 0
+  THRESH_TOZERO_INV* = 4      # value = value > threshold ? 0 : value
   THRESH_MASK* = 7
   THRESH_OTSU* = 8 # use Otsu algorithm to choose the optimal threshold value;
-                   #                                 combine the flag with one of the above CV_THRESH_* values 
+                   #                                 combine the flag with one of the above CV_THRESH_* values
 
-# Adaptive threshold methods 
+# Adaptive threshold methods
 
-const 
+const
   ADAPTIVE_THRESH_MEAN_C* = 0
   ADAPTIVE_THRESH_GAUSSIAN_C* = 1
 
-# FloodFill flags 
+# FloodFill flags
 
-const 
+const
   FLOODFILL_FIXED_RANGE* = (1 shl 16)
   FLOODFILL_MASK_ONLY* = (1 shl 17)
 
-# Canny edge detector flags 
+# Canny edge detector flags
 
-const 
+const
   CANNY_L2_GRADIENT* = (1 shl 31)
 
-# Variants of a Hough transform 
+# Variants of a Hough transform
 
-const 
+const
   HOUGH_STANDARD* = 0
   HOUGH_PROBABILISTIC* = 1
   HOUGH_MULTI_SCALE* = 2
   HOUGH_GRADIENT* = 3
 
-# Fast search data structures  
+# Fast search data structures
 
-type 
-  TFeatureTree* {.pure, final.} = object 
-  
-  TLSH* {.pure, final.} = object 
-  
-  TLSHOperations* {.pure, final.} = object 
-  
+type
+  TFeatureTree* {.pure, final.} = object
+
+  TLSH* {.pure, final.} = object
+
+  TLSHOperations* {.pure, final.} = object
+
