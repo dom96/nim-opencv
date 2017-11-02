@@ -287,7 +287,7 @@ type
     rows*: cint
     cols*: cint
 
-  MatPtr* = ptr TMat*
+  MatPtr* = ptr TMat
 
 #***************************************************************************************\
 #                       Multi-dimensional dense array (CvMatND)                          *
@@ -315,7 +315,7 @@ type
     data*: TMatNDdata
     dim*: array[0..MAX_DIM - 1, TMatNDDim]
 
-  MatNDPtr* = ptr TMapND
+  MatNDPtr* = ptr TMatND
 
 #***************************************************************************************\
 #                      Multi-dimensional sparse array (CvSparseMat)                      *
