@@ -421,6 +421,10 @@ proc reshape*(arr: ImgPtr; header: MatPtr; newCn: cint; newRows: cint = 0): MatP
 
 proc repeat*(src: ImgPtr; dst: ImgPtr) {.cdecl, importc: "cvRepeat",
     dynlib: coredll.}
+proc repeat*(src: ImgPtr): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  repeat(src, result)
+
 # Allocates array data
 
 proc createData*(arr: ImgPtr) {.cdecl, importc: "cvCreateData",
@@ -450,6 +454,10 @@ proc getSize*(arr: ImgPtr): TSize {.cdecl, importc: "cvGetSize",
 
 proc copy*(src: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.cdecl,
     importc: "cvCopy", dynlib: coredll.}
+proc copy*(src: ImgPtr; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  copy(src, result, mask)
+
 # Sets all or "masked" elements of input array
 #   to the same value
 
@@ -471,6 +479,17 @@ proc split*(src: ImgPtr; dst0: ImgPtr; dst1: ImgPtr; dst2: ImgPtr;
 
 proc merge*(src0: ImgPtr; src1: ImgPtr; src2: ImgPtr; src3: ImgPtr;
             dst: ImgPtr) {.cdecl, importc: "cvMerge", dynlib: coredll.}
+proc merge*(src0: ImgPtr; src1: ImgPtr; src2: ImgPtr): ImgPtr =
+  assert(src0.nChannels == 1 and src1.nChannels == 1 and
+         src2.nChannels == 1, "\nmerge requires single channel images")
+  result = createImage(size(src0.width, src0.height), src0.depth, 3)
+  merge(src0, src1, src2, nil, result)
+proc merge*(src0: ImgPtr; src1: ImgPtr; src2: ImgPtr; src3: ImgPtr): ImgPtr =
+  assert(src0.nChannels == 1 and src1.nChannels == 1 and
+         src2.nChannels == 1  and src3.nChannels == 1, "\nmerge requires single channel images")
+  result = createImage(size(src0.width, src0.height), src0.depth, 4)
+  merge(src0, src1, src2, src3, result)
+
 # Copies several channels from input arrays to
 #   certain channels of output arrays
 
@@ -486,9 +505,14 @@ proc mixChannels*(src: ptr ImgPtr; srcCount: cint; dst: ptr ImgPtr;
 proc convertScale*(src: ImgPtr; dst: ImgPtr; scale: cdouble = 1;
                    shift: cdouble = 0) {.cdecl, importc: "cvConvertScale",
     dynlib: coredll.}
+
 const
   CvtScale* = convertScale
   Scale* = convertScale
+
+proc convertScale*(src: ImgPtr; scale: cdouble = 1; shift: cdouble = 0): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  convertScale(src, result, scale, shift)
 
 template convert*(src, dst: untyped): untyped =
   convertScale((src), (dst), 1, 0)
@@ -505,6 +529,10 @@ proc convertScaleAbs*(src: ImgPtr; dst: ImgPtr; scale: cdouble = 1;
 const
   CvtScaleAbs* = convertScaleAbs
 
+proc convertScaleAbs*(src: ImgPtr; scale: cdouble = 1; shift: cdouble = 0): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  convertScaleAbs(src, result, scale, shift)
+
 # checks termination criteria validity and
 #   sets eps to default_eps (if it is not set),
 #   max_iter to default_max_iters (if it is not set)
@@ -520,14 +548,25 @@ proc checkTermCriteria*(criteria: TTermCriteria; defaultEps: cdouble;
 
 proc add*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvAdd", dynlib: coredll.}
+proc add*(src1: ImgPtr; src2: ImgPtr; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  add(src1, src2, result, mask)
+
 # dst(mask) = src(mask) + value
 
 proc addS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvAddS", dynlib: coredll.}
+proc addS*(src: ImgPtr; value: TScalar; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  addS(src, value, result, mask)
+
 # dst(mask) = src1(mask) - src2(mask)
 
 proc sub*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvSub", dynlib: coredll.}
+proc sub*(src1: ImgPtr; src2: ImgPtr; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  sub(src1, src2, result, mask)
 # dst(mask) = src(mask) - value = src(mask) + (-value)
 
 proc subS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
@@ -535,34 +574,53 @@ proc subS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
   addS(src,
        scalar(- value.val[0], - value.val[1], - value.val[2], - value.val[3]),
        dst, mask)
-
+proc subS*(src: ImgPtr; value: TScalar; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  subS(src, value, result, mask)
 # dst(mask) = value - src(mask)
 
 proc subRS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvSubRS", dynlib: coredll.}
+proc subRS*(src: ImgPtr; value: TScalar; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  subRS(src, value, result, mask)
+
 # dst(idx) = src1(idx) * src2(idx) * scale
 #   (scaled element-wise multiplication of 2 arrays)
 
 proc mul*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; scale: cdouble = 1) {.
     cdecl, importc: "cvMul", dynlib: coredll.}
+proc mul*(src1: ImgPtr; src2: ImgPtr; scale: cdouble = 1): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  mul(src1, src2, result, scale)
 # element-wise division/inversion with scaling:
 #    dst(idx) = src1(idx) * scale / src2(idx)
 #    or dst(idx) = scale / src2(idx) if src1 == 0
 
 proc `Div`*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; scale: cdouble = 1) {.
     cdecl, importc: "cvDiv", dynlib: coredll.}
+proc `Div`*(src1: ImgPtr; src2: ImgPtr; scale: cdouble = 1): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  `Div`(src1, src2, result, scale)
 # dst = src1 * scale + src2
 
 proc scaleAdd*(src1: ImgPtr; scale: TScalar; src2: ImgPtr; dst: ImgPtr) {.
     cdecl, importc: "cvScaleAdd", dynlib: coredll.}
 template axpy*(a, realScalar, b, c: untyped): untyped =
   ScaleAdd(a, realScalar(realScalar), b, c)
+proc scaleAdd*(src1: ImgPtr; scale: TScalar; src2: ImgPtr): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  scaleAdd(src1, scale, src2, result)
 
 # dst = src1 * alpha + src2 * beta + gamma
 
 proc addWeighted*(src1: ImgPtr; alpha: cdouble; src2: ImgPtr; beta: cdouble;
                   gamma: cdouble; dst: ImgPtr) {.cdecl,
     importc: "cvAddWeighted", dynlib: coredll.}
+proc addWeighted*(src1: ImgPtr; alpha: cdouble; src2: ImgPtr; beta: cdouble;
+                  gamma: cdouble): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  addWeighted(src1, alpha, src2, beta, gamma, result)
 # result = sum_i(src1(i) * src2(i)) (results for all channels are accumulated together)
 
 proc dotProduct*(src1: ImgPtr; src2: ImgPtr): cdouble {.cdecl,
@@ -571,38 +629,66 @@ proc dotProduct*(src1: ImgPtr; src2: ImgPtr): cdouble {.cdecl,
 
 proc bitwiseAnd*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvAnd", dynlib: coredll.}
+proc bitwiseAnd*(src1: ImgPtr; src2: ImgPtr; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  bitwiseAnd(src1, src2, result, mask)
 # dst(idx) = src(idx) & value
 
 proc andS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvAndS", dynlib: coredll.}
+proc andS*(src: ImgPtr; value: TScalar; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  andS(src, value, result, mask)
 # dst(idx) = src1(idx) | src2(idx)
 
 proc bitwiseOr*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvOr", dynlib: coredll.}
+proc bitwiseOr*(src1: ImgPtr; src2: ImgPtr; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  bitwiseOr(src1, src2, result, mask)
 # dst(idx) = src(idx) | value
 
 proc orS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvOrS", dynlib: coredll.}
+proc orS*(src: ImgPtr; value: TScalar; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  orS(src, value, result, mask)
 # dst(idx) = src1(idx) ^ src2(idx)
 
 proc bitwiseXor*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvXor", dynlib: coredll.}
+proc bitwiseXor*(src1: ImgPtr; src2: ImgPtr; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  bitwiseXor(src1, src2, result, mask)
 # dst(idx) = src(idx) ^ value
 
 proc xorS*(src: ImgPtr; value: TScalar; dst: ImgPtr; mask: ImgPtr = nil) {.
     cdecl, importc: "cvXorS", dynlib: coredll.}
+proc xorS*(src: ImgPtr; value: TScalar; mask: ImgPtr = nil): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  xorS(src, value, result, mask)
 # dst(idx) = ~src(idx)
 
 proc bitwiseNot*(src: ImgPtr; dst: ImgPtr) {.cdecl, importc: "cvNot",
     dynlib: coredll.}
+proc bitwiseNot*(src: ImgPtr): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  bitwiseNot(src, result)
 # dst(idx) = lower(idx) <= src(idx) < upper(idx)
 
 proc inRange*(src: ImgPtr; lower: ImgPtr; upper: ImgPtr; dst: ImgPtr) {.
     cdecl, importc: "cvInRange", dynlib: coredll.}
+proc inRange*(src: ImgPtr; lower: ImgPtr; upper: ImgPtr): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  inRange(src, lower, upper, result)
 # dst(idx) = lower <= src(idx) < upper
 
 proc inRangeS*(src: ImgPtr; lower: TScalar; upper: TScalar; dst: ImgPtr) {.
     cdecl, importc: "cvInRangeS", dynlib: coredll.}
+proc inRangeS*(src: ImgPtr; lower: TScalar; upper: TScalar): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  inRangeS(src, lower, upper, result)
+
 const
   CMP_EQ* = 0
   CMP_GT* = 1
@@ -617,36 +703,62 @@ const
 
 proc cmp*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr; cmpOp: cint) {.cdecl,
     importc: "cvCmp", dynlib: coredll.}
+proc cmp*(src1: ImgPtr; src2: ImgPtr; cmpOp: cint): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  cmp(src1, src2, result, cmpOp)
 # dst(idx) = src1(idx) _cmp_op_ value
 
 proc cmpS*(src: ImgPtr; value: cdouble; dst: ImgPtr; cmpOp: cint) {.cdecl,
     importc: "cvCmpS", dynlib: coredll.}
+proc cmpS*(src: ImgPtr; value: cdouble; cmpOp: cint): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  cmpS(src, value, result, cmpOp)
 # dst(idx) = min(src1(idx),src2(idx))
 
 proc min*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr) {.cdecl,
     importc: "cvMin", dynlib: coredll.}
+proc min*(src1: ImgPtr; src2: ImgPtr): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  min(src1, src2, result)
 # dst(idx) = max(src1(idx),src2(idx))
 
 proc max*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr) {.cdecl,
     importc: "cvMax", dynlib: coredll.}
+proc max*(src1: ImgPtr; src2: ImgPtr): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  max(src1, src2, result)
 # dst(idx) = min(src(idx),value)
 
 proc minS*(src: ImgPtr; value: cdouble; dst: ImgPtr) {.cdecl,
     importc: "cvMinS", dynlib: coredll.}
+proc minS*(src: ImgPtr; value: cdouble): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  minS(src, value, result)
 # dst(idx) = max(src(idx),value)
 
 proc maxS*(src: ImgPtr; value: cdouble; dst: ImgPtr) {.cdecl,
     importc: "cvMaxS", dynlib: coredll.}
+proc maxS*(src: ImgPtr; value: cdouble): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  maxS(src, value, result)
 # dst(x,y,c) = abs(src1(x,y,c) - src2(x,y,c))
 
 proc absDiff*(src1: ImgPtr; src2: ImgPtr; dst: ImgPtr) {.cdecl,
     importc: "cvAbsDiff", dynlib: coredll.}
+proc absDiff*(src1: ImgPtr; src2: ImgPtr): ImgPtr =
+  result = createImage(size(src1.width, src1.height), src1.depth, src1.nChannels)
+  absDiff(src1, src2, result)
 # dst(x,y,c) = abs(src(x,y,c) - value(c))
 
 proc absDiffS*(src: ImgPtr; dst: ImgPtr; value: TScalar) {.cdecl,
     importc: "cvAbsDiffS", dynlib: coredll.}
+
 template abs*(src, dst: untyped): untyped =
   AbsDiffS((src), (dst), ScalarAll(0))
+
+proc absDiffS*(src: ImgPtr; value: TScalar): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  absDiffS(src, result, value)
 
 #***************************************************************************************\
 #                                Math operations                                         *
@@ -668,12 +780,18 @@ proc polarToCart*(magnitude: ImgPtr; angle: ImgPtr; x: ImgPtr;
 
 proc pow*(src: ImgPtr; dst: ImgPtr; power: cdouble) {.cdecl,
     importc: "cvPow", dynlib: coredll.}
+proc pow*(src: ImgPtr; power: cdouble): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  pow(src, result, power)
 # Does exponention: dst(idx) = exp(src(idx)).
 #   Overflow is not handled yet. Underflow is handled.
 #   Maximal relative error is ~7e-6 for single-precision input
 
 proc exp*(src: ImgPtr; dst: ImgPtr) {.cdecl, importc: "cvExp",
     dynlib: coredll.}
+proc exp*(src: ImgPtr): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  exp(src, result)
 # Calculates natural logarithms: dst(idx) = log(abs(src(idx))).
 #   Logarithm of 0 gives large negative number(~-700)
 #   Maximal relative error is ~3e-7 for single-precision output
@@ -681,6 +799,9 @@ proc exp*(src: ImgPtr; dst: ImgPtr) {.cdecl, importc: "cvExp",
 
 proc log*(src: ImgPtr; dst: ImgPtr) {.cdecl, importc: "cvLog",
     dynlib: coredll.}
+proc log*(src: ImgPtr): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  log(src, result)
 # Fast arctangent calculation
 
 proc fastArctan*(y: cfloat; x: cfloat): cfloat {.cdecl, importc: "cvFastArctan",
@@ -1924,3 +2045,13 @@ proc stdErrReport*(status: cint; funcName: cstring; errMsg: cstring;
 proc guiBoxReport*(status: cint; funcName: cstring; errMsg: cstring;
                    fileName: cstring; line: cint; userdata: pointer): cint {.
     cdecl, importc: "cvGuiBoxReport", dynlib: coredll.}
+
+# Nim "Array" access for grayscale (1 channel) images
+
+proc `[]`*(img: ImgPtr, x, y: int): auto {.inline.} =
+  assert img.nChannels == 1
+  result = img.getReal2D(y.cint, x.cint)
+
+proc `[]`*(img: ImgPtr, p: TPoint): auto {.inline.} =
+  assert img.nChannels == 1
+  result = img.getReal2D(p.y, p.x)

@@ -52,6 +52,7 @@ else:
     imgprocdll* = "libopencv_imgproc.so"
 include opencv/imgproc/iptypes
 
+from math import floor
 
 #********************** Background statistics accumulation ****************************
 # Adds image to accumulator
@@ -81,22 +82,41 @@ proc runningAvg*(image: ImgPtr; acc: ImgPtr; alpha: cdouble;
 proc copyMakeBorder*(src: ImgPtr; dst: ImgPtr; offset: TPoint;
                      bordertype: cint; value: TScalar = scalarAll(0)) {.cdecl,
     importc: "cvCopyMakeBorder", dynlib: imgprocdll.}
+proc copyMakeBorder*(src: ImgPtr; offset: TPoint;
+                     bordertype: cint; value: TScalar = scalarAll(0)): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  copyMakeBorder(src, result, offset, bordertype, value)
 # Smoothes array (removes noise)
 
 proc smooth*(src: ImgPtr; dst: ImgPtr; smoothtype: cint = GAUSSIAN;
              size1: cint = 3; size2: cint = 0; sigma1: cdouble = 0;
              sigma2: cdouble = 0) {.cdecl, importc: "cvSmooth",
                                     dynlib: imgprocdll.}
+proc smooth*(src: ImgPtr; smoothtype: cint = GAUSSIAN;
+             size1: cint = 3; size2: cint = 0; sigma1: cdouble = 0;
+             sigma2: cdouble = 0): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  smooth(src, result, smoothtype, size1, size2, sigma1, sigma2)
 # Convolves the image with the kernel
 
 proc filter2D*(src: ImgPtr; dst: ImgPtr; kernel: MatPtr;
                anchor: TPoint = point(- 1, - 1)) {.cdecl, importc: "cvFilter2D",
     dynlib: imgprocdll.}
+proc filter2D*(src: ImgPtr; kernel: MatPtr;
+               anchor: TPoint = point(- 1, - 1)): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  filter2D(src, result, kernel, anchor)
 # Finds integral image: SUM(X,Y) = sum(x<X,y<Y)I(x,y)
 
 proc integral*(image: ImgPtr; sum: ImgPtr; sqsum: ImgPtr = nil;
                tiltedSum: ImgPtr = nil) {.cdecl, importc: "cvIntegral",
     dynlib: imgprocdll.}
+proc integral32S*(image: ImgPtr): ImgPtr =
+  result = createImage(size(image.width+1, image.height+1), cint(IPL_DEPTH_32S and 0xFFFF), image.nChannels)
+  integral(image, result, nil, nil)
+proc integral32F*(image: ImgPtr): ImgPtr =
+  result = createImage(size(image.width+1, image.height+1), cint(IPL_DEPTH_32F and 0xFFFF), image.nChannels)
+  integral(image, result, nil, nil)
 #
 #   Smoothes the input image with gaussian kernel and then down-samples it.
 #   dst_width = floor(src_width/2)[+1],
@@ -105,6 +125,10 @@ proc integral*(image: ImgPtr; sum: ImgPtr; sqsum: ImgPtr = nil;
 
 proc pyrDown*(src: ImgPtr; dst: ImgPtr; filter: cint = GAUSSIAN_5x5) {.
     cdecl, importc: "cvPyrDown", dynlib: imgprocdll.}
+proc pyrDown*(src: ImgPtr; filter: cint = GAUSSIAN_5x5): ImgPtr =
+  result = createImage(size(floor(src.width / 2).cint, floor(src.height / 2).cint), src.depth, src.nChannels)
+  pyrDown(src, result, filter)
+
 #
 #   Up-samples image and smoothes the result with gaussian kernel.
 #   dst_width = src_width*2,
@@ -113,6 +137,9 @@ proc pyrDown*(src: ImgPtr; dst: ImgPtr; filter: cint = GAUSSIAN_5x5) {.
 
 proc pyrUp*(src: ImgPtr; dst: ImgPtr; filter: cint = GAUSSIAN_5x5) {.cdecl,
     importc: "cvPyrUp", dynlib: imgprocdll.}
+proc pyrUp*(src: ImgPtr; filter: cint = GAUSSIAN_5x5): ImgPtr =
+  result = createImage(size(src.width * 2, src.height * 2), src.depth, src.nChannels)
+  pyrUp(src, result, filter)
 # Builds pyramid for an image
 
 proc createPyramid*(img: ImgPtr; extraLayers: cint; rate: cdouble;
@@ -129,6 +156,12 @@ proc pyrMeanShiftFiltering*(src: ImgPtr; dst: ImgPtr; sp: cdouble;
                             sr: cdouble; maxLevel: cint = 1; termcrit: TTermCriteria = termCriteria(
     TERMCRIT_ITER + TERMCRIT_EPS, 5, 1)) {.cdecl,
     importc: "cvPyrMeanShiftFiltering", dynlib: imgprocdll.}
+proc pyrMeanShiftFiltering*(src: ImgPtr; sp: cdouble;
+                            sr: cdouble; maxLevel: cint = 1; termcrit: TTermCriteria = termCriteria(
+    TERMCRIT_ITER + TERMCRIT_EPS, 5, 1)): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  pyrMeanShiftFiltering(src, result, sp, sr, maxLevel, termcrit)
+
 # Segments image using seed "markers"
 
 proc watershed*(image: ImgPtr; markers: ImgPtr) {.cdecl,
@@ -140,18 +173,30 @@ proc watershed*(image: ImgPtr; markers: ImgPtr) {.cdecl,
 proc sobel*(src: ImgPtr; dst: ImgPtr; xorder: cint; yorder: cint;
             apertureSize: cint = 3) {.cdecl, importc: "cvSobel",
                                        dynlib: imgprocdll.}
+proc sobel*(src: ImgPtr; xorder: cint = 1; yorder: cint = 0;
+            apertureSize: cint = 3): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  sobel(src, result, xorder, yorder, apertureSize)
 # Calculates the image Laplacian: (d2/dx + d2/dy)I
 
 proc laplace*(src: ImgPtr; dst: ImgPtr; apertureSize: cint = 3) {.cdecl,
     importc: "cvLaplace", dynlib: imgprocdll.}
+proc laplace*(src: ImgPtr; apertureSize: cint = 3): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  laplace(src, result, apertureSize)
 # Converts input array pixels from one color space to another
 
 proc cvtColor*(src: ImgPtr; dst: ImgPtr; code: cint) {.cdecl,
     importc: "cvCvtColor", dynlib: imgprocdll.}
+
 # Resizes image (input array is resized to fit the destination array)
 
 proc resize*(src: ImgPtr; dst: ImgPtr; interpolation: cint = INTER_LINEAR) {.
     cdecl, importc: "cvResize", dynlib: imgprocdll.}
+proc resize*(src: ImgPtr; fx, fy: cdouble = 1; interpolation: cint = INTER_LINEAR): ImgPtr =
+  result = createImage(size(floor(src.width.float * fx).cint, floor(src.height.float * fy).cint), src.depth, src.nChannels)
+  resize(src, result, interpolation)
+
 # Warps image with affine transform
 
 proc warpAffine*(src: ImgPtr; dst: ImgPtr; mapMatrix: MatPtr;
@@ -297,6 +342,11 @@ proc getQuadrangleSubPix*(src: ImgPtr; dst: ImgPtr; mapMatrix: MatPtr) {.
 proc matchTemplate*(image: ImgPtr; templ: ImgPtr; result: ImgPtr;
                     theMethod: cint) {.cdecl, importc: "cvMatchTemplate",
                                     dynlib: imgprocdll.}
+proc matchTemplate*(image: ImgPtr; templ: ImgPtr; theMethod: cint): ImgPtr =
+  result = createImage(size(image.width - templ.width + 1,
+                            image.height - templ.height + 1),
+                            IPL_DEPTH_32F, image.nChannels)
+  matchTemplate(image, templ, result, theMethod)
 # Computes earth mover distance between
 #   two weighted point sets (called signatures)
 
@@ -542,7 +592,11 @@ proc distTransform*(src: ImgPtr; dst: ImgPtr; distanceType: cint = DIST_L2;
 
 proc threshold*(src: ImgPtr; dst: ImgPtr; threshold: cdouble;
                 maxValue: cdouble; thresholdType: cint): cdouble {.cdecl,
-    importc: "cvThreshold", dynlib: imgprocdll.}
+    importc: "cvThreshold", dynlib: imgprocdll, discardable.}
+proc threshold*(src: ImgPtr; threshold: cdouble;
+                maxValue: cdouble; thresholdType: cint): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  threshold(src, result, threshold, maxValue, thresholdType)
 # Applies adaptive threshold to grayscale image.
 #   The two parameters for methods CV_ADAPTIVE_THRESH_MEAN_C and
 #   CV_ADAPTIVE_THRESH_GAUSSIAN_C are:
