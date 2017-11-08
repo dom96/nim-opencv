@@ -221,6 +221,9 @@ const
 # utility function: convert one image to another with optional vertical flip
 proc convertImage*(src: ImgPtr; dst: ImgPtr; flags: cint){.cdecl,
     importc: "cvConvertImage", dynlib: highguidll.}
+proc convertImage*(src: ImgPtr; flags: cint): ImgPtr =
+  result = createImage(size(src.width, src.height), src.depth, src.nChannels)
+  convertImage(src, result, flags)
 # wait for key event infinitely (delay<=0) or for "delay" milliseconds
 proc waitKey*(delay: cint): cint{.cdecl, importc: "cvWaitKey",
                                   dynlib: highguidll.}
