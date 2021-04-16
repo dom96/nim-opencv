@@ -441,7 +441,7 @@ proc termCriteria*(theType: cint; maxIter: cint; epsilon: cdouble): TTermCriteri
   var t: TTermCriteria
   t.theType = theType
   t.maxIter = maxIter
-  t.epsilon = cast[cfloat](epsilon)
+  t.epsilon = cfloat(epsilon)
   return t
 
 #****************************** CvPoint and variants **********************************
@@ -466,12 +466,12 @@ type
 
 proc point2D32f*(x: cdouble; y: cdouble): TPoint2D32f {.cdecl.} =
   var p: TPoint2D32f
-  p.x = cast[cfloat](x)
-  p.y = cast[cfloat](y)
+  p.x = cfloat(x)
+  p.y = cfloat(y)
   return p
 
 proc pointTo32f*(point: TPoint): TPoint2D32f {.cdecl.} =
-  return point2D32f(cast[cfloat](point.x), cast[cfloat](point.y))
+  return point2D32f(cfloat(point.x), cfloat(point.y))
 
 proc pointFrom32f*(point: TPoint2D32f): TPoint {.cdecl.} =
   var ipt: TPoint
@@ -488,9 +488,9 @@ type
 
 proc point3D32f*(x: cdouble; y: cdouble; z: cdouble): TPoint3D32f {.cdecl.} =
   var p: TPoint3D32f
-  p.x = cast[cfloat](x)
-  p.y = cast[cfloat](y)
-  p.z = cast[cfloat](z)
+  p.x = cfloat(x)
+  p.y = cfloat(y)
+  p.z = cfloat(z)
   return p
 
 type
@@ -541,8 +541,8 @@ type
 
 proc size2D32f*(width: cdouble; height: cdouble): TSize2D32f {.cdecl.} =
   var s: TSize2D32f
-  s.width = cast[cfloat](width)
-  s.height = cast[cfloat](height)
+  s.width = cfloat(width)
+  s.height = cfloat(height)
   return s
 
 type
